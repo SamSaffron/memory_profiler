@@ -3,10 +3,8 @@ require "memory_profiler/results"
 require "memory_profiler/reporter"
 
 module MemoryProfiler
-  def self.report
-    Reporter.measure do
-      yield
-    end
+  def self.report(top=50,&block)
+    Reporter.report(top,&block)
   end
 end
 

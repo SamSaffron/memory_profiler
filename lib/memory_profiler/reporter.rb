@@ -4,12 +4,12 @@ module MemoryProfiler
 
     Stat = Struct.new(:class_name, :file, :line, :class_path, :method_id, :memsize)
 
-    def self.report(&block)
+    def self.report(top=50, &block)
       report = self.new
-      report.run(&block)
+      report.run(top,&block)
     end
 
-    def run
+    def run(top=50,&block)
       allocated = nil
 
       GC.start
@@ -17,7 +17,7 @@ module MemoryProfiler
 
       ObjectSpace.trace_object_allocations do
         generation = GC.count
-        yield
+        block.call
         allocated = object_list(generation)
       end
 
@@ -40,13 +40,17 @@ module MemoryProfiler
       results.total_allocated = allocated.count
       results.total_retained = retained.count
 
-
-      results.allocated_by_file = self.class.top_n(allocated) do |result|
+      by_file = lambda do |result|
         result[1].file
       end
 
-      results.retained_by_file = self.class.top_n(retained) do |result|
-        result[1].file
+      by_location = lambda do |result|
+        "#{result[1].file}:#{result[1].line}"
+      end
+
+      [["allocated", allocated], ["retained",retained]].each do |n, data|
+        results.send("#{n}_by_file=", self.class.top_n(data,top,&by_file))
+        results.send("#{n}_by_location=", self.class.top_n(data,top,&by_location))
       end
 
       results
