@@ -17,18 +17,14 @@ module MemoryProfiler
 
       ObjectSpace.trace_object_allocations do
         generation = GC.count
-
         yield
-
         allocated = object_list(generation)
-
       end
 
       GC.enable
 
-      # This seems to be required, first GC skips some objects
-      GC.start
-      GC.start
+      # attempt to work around lazy sweep, need a cleaner way
+      GC.start while new_count = decreased_count(new_count)
 
       retained = {}
       ObjectSpace.each_object do |obj|
@@ -44,8 +40,76 @@ module MemoryProfiler
       results.total_allocated = allocated.count
       results.total_retained = retained.count
 
+
+      results.allocated_by_file = self.class.top_n(allocated) do |result|
+        result[1].file
+      end
+
+      results.retained_by_file = self.class.top_n(retained) do |result|
+        result[1].file
+      end
+
       results
 
+    end
+
+    def self.top_n(data, max = 10)
+
+      sorted =
+        if block_given?
+          data.map { |row|
+            yield(row)
+          }
+        else
+          data.dup
+        end
+
+      sorted.sort!
+
+      found = []
+
+      last = sorted[0]
+      count = 0
+      lowest_count = 0
+
+      sorted << nil
+
+      sorted.each do |row|
+        unless row == last
+          if count > lowest_count
+            found << {data: last, count: count}
+          end
+
+          if found.length > max
+            found.sort!{|x,y| x[:count] <=> y[:count] }
+            found.delete_at(0)
+            lowest_count = found[0][:count]
+          end
+
+          count = 0
+          last = row
+        end
+
+        count += 1 unless row.nil?
+      end
+
+      found.reverse
+    end
+
+    def decreased_count(old)
+      count = count_objects
+      if !old || count < old
+        count
+      else
+        nil
+      end
+    end
+
+    def count_objects
+      i = 0
+      ObjectSpace.each_object do |obj|
+        i += 1
+      end
     end
 
     def object_list(generation)
