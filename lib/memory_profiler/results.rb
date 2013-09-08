@@ -1,33 +1,88 @@
-class MemoryProfiler::Results
+module MemoryProfiler
+  class Results
 
-  attr_accessor :total_allocated
-  attr_accessor :total_retained
+    def self.register_type(name, lookup)
+      ["allocated","retained"].product(["objects","memory"]).each do |type, metric|
+        full_name = "#{type}_#{metric}_by_#{name}"
+        attr_accessor full_name
 
-  attr_accessor :retained_by_gem
-  attr_accessor :allocated_by_gem
+        @@lookups ||= []
+        mapped = lookup
 
-  attr_accessor :retained_by_file
-  attr_accessor :allocated_by_file
+        if metric == "memory"
+          mapped = lambda{|stat|
+            [lookup.call(stat), stat.memsize]
+          }
+        end
 
-  attr_accessor :retained_by_location
-  attr_accessor :allocated_by_location
+        @@lookups << [full_name, mapped]
 
-  def pretty_print
-    puts "Total allocated #{total_allocated}"
-    puts "Total retained #{total_retained}"
-    puts
-    dump "Allocated by file", allocated_by_file
-    dump "Retained by file", retained_by_file
-    dump "Allocated by location", allocated_by_location
-    dump "Retained by location", retained_by_location
-  end
-
-  def dump(description, data)
-    puts description
-    puts "-----------------------------------"
-    data.each do |item|
-      puts "#{item[:data]} x #{item[:count]}"
+      end
     end
-    puts
+
+    register_type :gem, lambda{|stat|
+      Helpers.guess_gem("#{stat.file}")
+    }
+
+    register_type :file, lambda{|stat|
+      stat.file
+    }
+
+    register_type :location, lambda{|stat|
+      "#{stat.file}:#{stat.line}"
+    }
+
+    attr_accessor :total_allocated
+    attr_accessor :total_retained
+
+    def self.from_raw(allocated, retained, top)
+      self.new.register_results(allocated,retained,top)
+    end
+
+    def register_results(allocated, retained, top)
+      @@lookups.each do |name, lookup|
+        mapped = lambda{|tuple|
+            lookup.call(tuple[1])
+        }
+
+        result =
+          if name =~ /^allocated/
+            allocated.top_n(top, &mapped)
+          else
+            retained.top_n(top, &mapped)
+          end
+
+        self.send "#{name}=", result
+        self.total_allocated = allocated.count
+        self.total_retained = retained.count
+      end
+
+      self
+    end
+
+    def pretty_print
+      puts "Total allocated #{total_allocated}"
+      puts "Total retained #{total_retained}"
+      puts
+      ["allocated","retained"]
+        .product(["memory", "objects"])
+        .product(["gem", "file", "location"])
+        .each do |(type, metric), name|
+        dump "#{type} #{metric} by #{name}", self.send("#{type}_#{metric}_by_#{name}")
+      end
+    end
+
+    def dump(description, data)
+      puts description
+      puts "-----------------------------------"
+      if data
+        data.each do |item|
+          puts "#{item[:data]} x #{item[:count]}"
+        end
+      else
+        puts "NO DATA"
+      end
+      puts
+    end
   end
 end

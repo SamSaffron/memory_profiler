@@ -1,4 +1,8 @@
 require "memory_profiler/version"
+require "memory_profiler/helpers"
+require "memory_profiler/top_n"
+require "memory_profiler/stat"
+require "memory_profiler/stat_hash"
 require "memory_profiler/results"
 require "memory_profiler/reporter"
 

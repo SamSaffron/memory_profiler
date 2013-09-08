@@ -2,31 +2,36 @@ require 'objspace'
 module MemoryProfiler
   class Reporter
 
-    Stat = Struct.new(:class_name, :file, :line, :class_path, :method_id, :memsize)
-
     def self.report(top=50, &block)
       report = self.new
       report.run(top,&block)
     end
 
     def run(top=50,&block)
-      allocated = nil
+      allocated, rvalue_size = nil
 
-      GC.start
+      # calcualte RVALUE
+      GC::Profiler.enable
+      Helpers.full_gc
+      begin
+        data = GC::Profiler.raw_data[0]
+        # so hacky, but no other way
+        rvalue_size = data[:HEAP_TOTAL_SIZE] / data[:HEAP_TOTAL_OBJECTS]
+        GC::Profiler.disable
+      end
       GC.disable
 
       ObjectSpace.trace_object_allocations do
         generation = GC.count
         block.call
-        allocated = object_list(generation)
+        allocated = object_list(generation, rvalue_size)
       end
 
       GC.enable
 
-      # attempt to work around lazy sweep, need a cleaner way
-      GC.start while new_count = decreased_count(new_count)
+      Helpers.full_gc
 
-      retained = {}
+      retained = StatHash.new
       ObjectSpace.each_object do |obj|
         begin
           found = allocated[obj.__id__]
@@ -36,88 +41,12 @@ module MemoryProfiler
         end
       end
 
-      results = Results.new
-      results.total_allocated = allocated.count
-      results.total_retained = retained.count
-
-      by_file = lambda do |result|
-        result[1].file
-      end
-
-      by_location = lambda do |result|
-        "#{result[1].file}:#{result[1].line}"
-      end
-
-      [["allocated", allocated], ["retained",retained]].each do |n, data|
-        results.send("#{n}_by_file=", self.class.top_n(data,top,&by_file))
-        results.send("#{n}_by_location=", self.class.top_n(data,top,&by_location))
-      end
-
-      results
+      Results.from_raw(allocated,retained,top)
 
     end
 
-    def self.top_n(data, max = 10)
-
-      sorted =
-        if block_given?
-          data.map { |row|
-            yield(row)
-          }
-        else
-          data.dup
-        end
-
-      sorted.sort!
-
-      found = []
-
-      last = sorted[0]
-      count = 0
-      lowest_count = 0
-
-      sorted << nil
-
-      sorted.each do |row|
-        unless row == last
-          if count > lowest_count
-            found << {data: last, count: count}
-          end
-
-          if found.length > max
-            found.sort!{|x,y| x[:count] <=> y[:count] }
-            found.delete_at(0)
-            lowest_count = found[0][:count]
-          end
-
-          count = 0
-          last = row
-        end
-
-        count += 1 unless row.nil?
-      end
-
-      found.reverse
-    end
-
-    def decreased_count(old)
-      count = count_objects
-      if !old || count < old
-        count
-      else
-        nil
-      end
-    end
-
-    def count_objects
-      i = 0
-      ObjectSpace.each_object do |obj|
-        i += 1
-      end
-    end
-
-    def object_list(generation)
-      results = {}
+    def object_list(generation, rvalue_size)
+      results = StatHash.new
       objs = []
 
       ObjectSpace.each_object do |obj|
@@ -136,7 +65,7 @@ module MemoryProfiler
             begin
               object_id = obj.__id__
 
-              memsize = ObjectSpace.memsize_of(obj)
+              memsize = ObjectSpace.memsize_of(obj) + rvalue_size
               results[object_id] = Stat.new(class_name, file, line, class_path, method_id, memsize)
             rescue
               # __id__ is not defined, give up
