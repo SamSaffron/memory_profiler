@@ -60,29 +60,29 @@ module MemoryProfiler
       self
     end
 
-    def pretty_print
-      puts "Total allocated #{total_allocated}"
-      puts "Total retained #{total_retained}"
-      puts
+    def pretty_print(io = STDOUT)
+      io.puts "Total allocated #{total_allocated}"
+      io.puts "Total retained #{total_retained}"
+      io.puts
       ["allocated","retained"]
         .product(["memory", "objects"])
         .product(["gem", "file", "location"])
         .each do |(type, metric), name|
-        dump "#{type} #{metric} by #{name}", self.send("#{type}_#{metric}_by_#{name}")
+        dump "#{type} #{metric} by #{name}", self.send("#{type}_#{metric}_by_#{name}"), io
       end
     end
 
-    def dump(description, data)
-      puts description
-      puts "-----------------------------------"
+    def dump(description, data, io)
+      io.puts description
+      io.puts "-----------------------------------"
       if data
         data.each do |item|
-          puts "#{item[:data]} x #{item[:count]}"
+          io.puts "#{item[:data]} x #{item[:count]}"
         end
       else
-        puts "NO DATA"
+        io.puts "NO DATA"
       end
-      puts
+      io.puts
     end
   end
 end

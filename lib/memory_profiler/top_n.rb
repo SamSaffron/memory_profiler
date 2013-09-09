@@ -45,7 +45,9 @@ module MemoryProfiler
         count += (current_count || 1) unless row.nil?
       end
 
-      found.reverse
+      found
+        .sort!{|x,y| x[:count] <=> y[:count] }
+        .reverse
     end
   end
 end
