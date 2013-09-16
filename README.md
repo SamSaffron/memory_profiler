@@ -1,6 +1,6 @@
 # MemoryProfiler
 
-TODO: Write a gem description
+A memory profiler for MRI head
 
 ## Installation
 
@@ -18,7 +18,7 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+
 
 ## Contributing
 
