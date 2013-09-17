@@ -7,8 +7,9 @@ require "memory_profiler/results"
 require "memory_profiler/reporter"
 
 module MemoryProfiler
-  def self.report(top=50,&block)
-    Reporter.report(top,&block)
+  def self.report(opts={},&block)
+    opts[:top] ||= 50
+    Reporter.report(opts,&block)
   end
 end
 

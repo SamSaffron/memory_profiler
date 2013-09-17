@@ -1,6 +1,9 @@
 require 'test_helper'
 
 class TestReporter < Minitest::Test
+
+  class Foo; end
+
   def allocate_strings(n)
     n.times do
       ""
@@ -16,6 +19,16 @@ class TestReporter < Minitest::Test
     assert_equal(11, result.total_allocated)
     assert_equal(1, result.total_retained)
     assert_equal(1, result.retained_objects_by_location.length)
+  end
+
+  def test_class_tracing
+    result = MemoryProfiler::Reporter.report(:trace => [Foo]) do
+      "hello"
+      "hello"
+      Foo.new
+    end
+    assert_equal(1, result.total_allocated)
+    assert_equal(0, result.total_retained)
   end
 
 end

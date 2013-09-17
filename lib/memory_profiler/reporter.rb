@@ -2,13 +2,16 @@ require 'objspace'
 module MemoryProfiler
   class Reporter
 
-    def self.report(top=50, &block)
+    def self.report(opts={}, &block)
       report = self.new
-      report.run(top,&block)
+      report.run(opts,&block)
     end
 
-    def run(top=50,&block)
+    def run(opts={},&block)
       allocated, rvalue_size = nil
+
+      top = opts[:top] || 50
+      trace = opts[:trace]
 
       # calcualte RVALUE
       GC::Profiler.enable
@@ -24,7 +27,7 @@ module MemoryProfiler
       ObjectSpace.trace_object_allocations do
         generation = GC.count
         block.call
-        allocated = object_list(generation, rvalue_size)
+        allocated = object_list(generation, rvalue_size, trace)
       end
 
       GC.enable
@@ -45,12 +48,18 @@ module MemoryProfiler
 
     end
 
-    def object_list(generation, rvalue_size)
+    def object_list(generation, rvalue_size, trace)
       results = StatHash.new
       objs = []
 
       ObjectSpace.each_object do |obj|
-        objs << obj
+        begin
+          if !trace || trace.include?(obj.class)
+            objs << obj
+          end
+        rescue
+          # may not respond to class so skip
+        end
       end
 
       objs.each do |obj|
