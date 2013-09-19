@@ -32,8 +32,8 @@ module MemoryProfiler
       "#{stat.file}:#{stat.line}"
     }
 
-    attr_accessor :total_allocated
-    attr_accessor :total_retained
+    attr_accessor :strings_retained, :strings_allocated
+    attr_accessor :total_retained, :total_allocated
 
     def self.from_raw(allocated, retained, top)
       self.new.register_results(allocated,retained,top)
@@ -53,11 +53,27 @@ module MemoryProfiler
           end
 
         self.send "#{name}=", result
-        self.total_allocated = allocated.count
-        self.total_retained = retained.count
       end
 
+      self.strings_retained = string_report(retained, top)
+
+      self.total_allocated = allocated.count
+      self.total_retained = retained.count
+
       self
+    end
+
+    StringStat = Struct.new(:string, :count, :location)
+
+    def string_report(data, top)
+      data
+        .keep_if{|id,stat| stat.class_name == "String"f}
+        .map{|id,stat| [ObjectSpace._id2ref(id), "#{stat.file}:#{stat.line}"]}
+        .group_by{|string, location| string}
+        .sort_by{|string, list| -list.count}
+        .first(top)
+        .map{|string,list| [string, list.group_by{|str,location| location}
+                                        .map{|location, locations| [location, locations.count]}]}
     end
 
     def pretty_print(io = STDOUT)
@@ -70,6 +86,25 @@ module MemoryProfiler
         .each do |(type, metric), name|
         dump "#{type} #{metric} by #{name}", self.send("#{type}_#{metric}_by_#{name}"), io
       end
+
+      io.puts
+      dump_strings(io, "Allocated",strings_allocated)
+      io.puts
+      dump_strings(io, "Retained",strings_retained)
+      nil
+    end
+
+    def dump_strings(io, title, strings)
+      return unless strings
+      io.puts "#{title} String Report"
+      io.puts "-----------------------------------"
+      strings.each do |string, stats|
+        io.puts "#{string[0..200].inspect} x #{stats.reduce(0){|a,b| a + b[1]}}"
+        stats.sort_by{|x,y| -y}.each do |location, count|
+          io.puts "    #{location} x #{count}"
+        end
+      end
+      nil
     end
 
     def dump(description, data, io)
