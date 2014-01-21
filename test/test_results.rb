@@ -1,4 +1,4 @@
-require 'test_helper'
+require_relative 'test_helper'
 
 class TestResults < Minitest::Test
   def test_pretty_print_works
