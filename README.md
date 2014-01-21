@@ -1,6 +1,6 @@
 # MemoryProfiler
 
-A memory profiler for MRI head
+A memory profiler for Ruby 2.1.0
 
 [![Build Status](https://travis-ci.org/SamSaffron/memory_profiler.png?branch=master)](https://travis-ci.org/SamSaffron/memory_profiler)
 
