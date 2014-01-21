@@ -14,8 +14,8 @@ module MemoryProfiler
 
     # helper to work around GC.start not freeing everything
     def self.full_gc
-      # attempt to work around lazy sweep, need a cleaner way
-      GC.start while new_count = decreased_count(new_count)
+      # TODO: discuss with @tmm1 and @ko1 if the while loop is needed
+      GC.start(full_mark: true) while new_count = decreased_count(new_count)
     end
 
     def self.decreased_count(old)
