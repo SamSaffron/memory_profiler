@@ -2,6 +2,8 @@
 
 A memory profiler for MRI head
 
+[![Build Status](https://travis-ci.org/SamSaffron/memory_profiler.png?branch=master)](https://travis-ci.org/SamSaffron/memory_profiler)
+
 ## Installation
 
 Add this line to your application's Gemfile:
