@@ -13,15 +13,8 @@ module MemoryProfiler
       top = opts[:top] || 50
       trace = opts[:trace]
 
-      # calcualte RVALUE
-      GC::Profiler.enable
+      rvalue_size = GC::INTERNAL_CONSTANTS[:RVALUE_SIZE]
       Helpers.full_gc
-      begin
-        data = GC::Profiler.raw_data[0]
-        # so hacky, but no other way
-        rvalue_size = data[:HEAP_TOTAL_SIZE] / data[:HEAP_TOTAL_OBJECTS]
-        GC::Profiler.disable
-      end
       GC.disable
 
       ObjectSpace.trace_object_allocations do
