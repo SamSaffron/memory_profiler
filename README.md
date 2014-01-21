@@ -1,6 +1,6 @@
 # MemoryProfiler
 
-TODO: Write a gem description
+A memory profiler for MRI head
 
 ## Installation
 
@@ -18,7 +18,7 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+
 
 ## Contributing
 
@@ -27,3 +27,8 @@ TODO: Write usage instructions here
 3. Commit your changes (`git commit -am 'Add some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)
 5. Create new Pull Request
+
+## Changelog
+
+- 0.0.3
+- Added string analysis

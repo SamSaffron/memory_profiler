@@ -30,6 +30,9 @@ module MemoryProfiler
         allocated = object_list(generation, rvalue_size, trace)
       end
 
+      results = Results.new
+      results.strings_allocated = results.string_report(allocated,top)
+
       GC.enable
 
       Helpers.full_gc
@@ -40,11 +43,14 @@ module MemoryProfiler
           found = allocated[obj.__id__]
           retained[obj.__id__] = found if found
         rescue
-          # __id__ is not defined, skip it
+          # __id__ is not defined on BasicObject, skip it
+          # we can probably trasplant the object_id at this point, 
+          # but it is quite rare
         end
       end
 
-      Results.from_raw(allocated,retained,top)
+      results.register_results(allocated,retained,top)
+      results
 
     end
 
