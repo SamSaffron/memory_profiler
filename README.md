@@ -83,7 +83,7 @@ allocated memory by location
 /home/sam/.rbenv/versions/2.1.0-github/lib/ruby/gems/2.1.0/gems/mime-types-2.0/lib/mime/type.rb:523 x 265920
 /home/sam/.rbenv/versions/2.1.0-github/lib/ruby/2.1.0/rubygems/core_ext/kernel_require.rb:55 x 222705
 /home/sam/.rbenv/versions/2.1.0-github/lib/ruby/gems/2.1.0/gems/mime-types-2.0/lib/mime/types/loader.rb:215 x 218105
-[REDUCTED]
+[REDACTED]
 
 allocated]objects by gem
 -----------------------------------
@@ -131,7 +131,7 @@ allocated objects by location
 /home/sam/.rbenv/versions/2.1.0-github/lib/ruby/gems/2.1.0/gems/mime-types-2.0/lib/mime/type.rb:224 x 312
 /home/sam/.rbenv/versions/2.1.0-github/lib/ruby/gems/2.1.0/gems/mime-types-2.0/lib/mime/types/cache.rb:62 x 287
 /home/sam/.rbenv/versions/2.1.0-github/lib/ruby/2.1.0/x86_64-linux/json/ext/parser.so:0 x 124
-[REDUCTED]
+[REDACTED]
 
 retained memory by gem
 -----------------------------------
