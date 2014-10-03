@@ -31,4 +31,15 @@ class TestReporter < Minitest::Test
     assert_equal(0, result.total_retained)
   end
 
+  def test_ignore_file
+    result = MemoryProfiler::Reporter.report(:ignore_files => /test_reporter\.rb/) do
+      "hello"
+      "hello"
+      Foo.new
+    end
+
+    assert_equal(0, result.total_allocated)
+    assert_equal(0, result.total_retained)
+  end
+
 end
