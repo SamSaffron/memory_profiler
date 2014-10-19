@@ -67,7 +67,7 @@ module MemoryProfiler
 
     def string_report(data, top)
       data
-        .keep_if{|id,stat| stat.class_name == "String"}
+        .reject{|id,stat| stat.class_name != "String"}
         .map{|id,stat| [ObjectSpace._id2ref(id), "#{stat.file}:#{stat.line}"]}
         .group_by{|string, location| string}
         .sort_by{|string, list| -list.count}
