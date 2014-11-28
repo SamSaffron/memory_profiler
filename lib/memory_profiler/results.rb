@@ -102,9 +102,9 @@ module MemoryProfiler
       io.puts "#{title} String Report"
       io.puts "-----------------------------------".gray
       strings.each do |string, stats|
-        io.puts "#{stats.reduce(0) { |a, b| a + b[1] }.to_s.ljust(10)} #{string[0..200].inspect.green}"
+        io.puts "#{stats.reduce(0) { |a, b| a + b[1] }.to_s.rjust(10)}  #{string[0..200].inspect.green}"
         stats.sort_by { |x, y| -y }.each do |location, count|
-          io.puts "#{count.to_s.ljust(10).gray} #{location}"
+          io.puts "#{count.to_s.rjust(10).gray}  #{location}"
         end
         io.puts
       end
@@ -116,7 +116,7 @@ module MemoryProfiler
       io.puts "-----------------------------------".gray
       if data
         data.each do |item|
-          io.puts "#{item[:count].to_s.ljust(10)} #{item[:data]}"
+          io.puts "#{item[:count].to_s.rjust(10)}  #{item[:data]}"
         end
       else
         io.puts "NO DATA"
