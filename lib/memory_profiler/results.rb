@@ -1,8 +1,6 @@
-
 module MemoryProfiler
   class Results
-
-    using Color
+    include NoColor
 
     def self.register_type(name, lookup)
       ["allocated", "retained"].product(["objects", "memory"]).each do |type, metric|
@@ -100,11 +98,11 @@ module MemoryProfiler
     def dump_strings(io, title, strings)
       return unless strings
       io.puts "#{title} String Report"
-      io.puts "-----------------------------------".gray
+      io.puts gray("-----------------------------------")
       strings.each do |string, stats|
-        io.puts "#{stats.reduce(0) { |a, b| a + b[1] }.to_s.rjust(10)}  #{string[0..200].inspect.green}"
+        io.puts "#{stats.reduce(0) { |a, b| a + b[1] }.to_s.rjust(10)}  #{green(string[0..200].inspect)}"
         stats.sort_by { |x, y| -y }.each do |location, count|
-          io.puts "#{count.to_s.rjust(10).gray}  #{location}"
+          io.puts "#{gray(count.to_s.rjust(10))}  #{location}"
         end
         io.puts
       end
@@ -113,7 +111,7 @@ module MemoryProfiler
 
     def dump(description, data, io)
       io.puts description
-      io.puts "-----------------------------------".gray
+      io.puts gray("-----------------------------------")
       if data
         data.each do |item|
           io.puts "#{item[:count].to_s.rjust(10)}  #{item[:data]}"
@@ -124,4 +122,7 @@ module MemoryProfiler
       io.puts
     end
   end
+
 end
+
+
