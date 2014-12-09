@@ -1,5 +1,16 @@
 module MemoryProfiler
   module Color
+
+    COLORS = {
+        line: :gray,
+        string: :green,
+        path: :gray
+    }
+
+    def color(role, text)
+      self.send COLORS[role], text
+    end
+
     def black(str)
       "\033[30m#{str}\033[0m"
     end
@@ -75,11 +86,13 @@ module MemoryProfiler
     def no_colors
       self.gsub /\033\[\d+m/, "";
     end
+
   end
 
   module NoColor
-    [:black, :red, :green, :brown, :blue, :magenta, :cyan, :gray, :bg_black, :bg_red, :bg_green, :bg_brown, :bg_blue, :bg_magenta, :bg_cyan, :bg_gray, :bold, :reverse_color, :no_colors].each do |m|
-      define_method m, ->(str) { str }
+    def color(role, text)
+      text
     end
   end
+
 end

@@ -42,4 +42,25 @@ class TestReporter < Minitest::Test
     assert_equal(0, result.total_retained)
   end
 
+  def test_no_color_output
+    report = MemoryProfiler::Reporter.report(color_output: false) do
+      allocate_strings(10)
+    end
+    io = StringIO.new
+    report.pretty_print io
+    puts io.string
+    assert(!io.string.include?("\033"))
+  end
+
+  def test_color_output
+    report = MemoryProfiler::Reporter.report(color_output: true) do
+      allocate_strings(10)
+    end
+    io = StringIO.new
+    report.pretty_print io
+    puts io.string
+    assert(io.string.include?("\033"))
+  end
+
+
 end

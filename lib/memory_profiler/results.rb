@@ -98,11 +98,11 @@ module MemoryProfiler
     def dump_strings(io, title, strings)
       return unless strings
       io.puts "#{title} String Report"
-      io.puts gray("-----------------------------------")
+      io.puts color(:line, "-----------------------------------")
       strings.each do |string, stats|
-        io.puts "#{stats.reduce(0) { |a, b| a + b[1] }.to_s.rjust(10)}  #{green(string[0..200].inspect)}"
+        io.puts "#{stats.reduce(0) { |a, b| a + b[1] }.to_s.rjust(10)}  #{color(:string, (string[0..200].inspect))}"
         stats.sort_by { |x, y| -y }.each do |location, count|
-          io.puts "#{gray(count.to_s.rjust(10))}  #{location}"
+          io.puts "#{color(:path, count.to_s.rjust(10))}  #{location}"
         end
         io.puts
       end
@@ -111,7 +111,7 @@ module MemoryProfiler
 
     def dump(description, data, io)
       io.puts description
-      io.puts gray("-----------------------------------")
+      io.puts color(:line, "-----------------------------------")
       if data
         data.each do |item|
           io.puts "#{item[:count].to_s.rjust(10)}  #{item[:data]}"
