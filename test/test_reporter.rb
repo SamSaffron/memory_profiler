@@ -43,24 +43,59 @@ class TestReporter < Minitest::Test
   end
 
   def test_no_color_output
-    report = MemoryProfiler::Reporter.report(color_output: false) do
+    report = MemoryProfiler::Reporter.report do
       allocate_strings(10)
     end
     io = StringIO.new
-    report.pretty_print io
-    puts io.string
-    assert(!io.string.include?("\033"))
+    report.pretty_print io, color_output: false
+    assert(!io.string.include?("\033"), 'excludes color information')
   end
 
   def test_color_output
-    report = MemoryProfiler::Reporter.report(color_output: true) do
+    report = MemoryProfiler::Reporter.report do
+      allocate_strings(10)
+    end
+    io = StringIO.new
+    report.pretty_print io, color_output: true
+    assert(io.string.include?("\033"), 'includes color information')
+  end
+
+  class StdoutMock < StringIO
+    def isatty
+      true
+    end
+  end
+
+  def test_color_output_defaults_to_true_when_run_from_tty
+    report = MemoryProfiler::Reporter.report do
+      allocate_strings(10)
+    end
+    io = StdoutMock.new
+    report.pretty_print io
+    assert(io.string.include?("\033"), 'includes color information')
+  end
+
+  def test_mono_output_defaults_to_true_when_not_run_from_tty
+    report = MemoryProfiler::Reporter.report do
       allocate_strings(10)
     end
     io = StringIO.new
     report.pretty_print io
-    puts io.string
-    assert(io.string.include?("\033"))
+    assert(!io.string.include?("\033"), 'excludes color information')
   end
 
+  def test_reports_can_be_reused_with_different_color_options
+    report = MemoryProfiler::Reporter.report do
+      allocate_strings(10)
+    end
+
+    io = StringIO.new
+    report.pretty_print io, color_output: true
+    assert(io.string.include?("\033"), 'includes color information')
+
+    io = StringIO.new
+    report.pretty_print io, color_output: false
+    assert(!io.string.include?("\033"), 'excludes color information')
+  end
 
 end

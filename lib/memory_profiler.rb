@@ -1,6 +1,7 @@
 require "memory_profiler/version"
 require "memory_profiler/helpers"
-require "memory_profiler/color"
+require "memory_profiler/polychrome"
+require "memory_profiler/monochrome"
 require "memory_profiler/top_n"
 require "memory_profiler/stat"
 require "memory_profiler/stat_hash"

@@ -14,7 +14,6 @@ module MemoryProfiler
       @top          = opts[:top] || 50
       @trace        = opts[:trace]
       @ignore_files = opts[:ignore_files]
-      @color_output = opts[:color_output]
     end
 
     # Helper for generating new reporter and running against block
@@ -43,8 +42,7 @@ module MemoryProfiler
       end
 
       results = Results.new
-      results.extend Color if @color_output
-      results.strings_allocated = results.string_report(allocated,top)
+      results.strings_allocated = results.string_report(allocated, top)
 
       GC.enable
 
@@ -62,7 +60,7 @@ module MemoryProfiler
         end
       end
 
-      results.register_results(allocated,retained,top)
+      results.register_results(allocated, retained, top)
       results
     end
 

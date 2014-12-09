@@ -1,6 +1,5 @@
 module MemoryProfiler
   class Results
-    include NoColor
 
     def self.register_type(name, lookup)
       ["allocated", "retained"].product(["objects", "memory"]).each do |type, metric|
@@ -77,7 +76,10 @@ module MemoryProfiler
                                              .map { |location, locations| [location, locations.count] }] }
     end
 
-    def pretty_print(io = STDOUT)
+    def pretty_print(io = STDOUT, options = {})
+      color_output = options.fetch(:color_output) { io.respond_to?(:isatty) && io.isatty }
+      @colorize = color_output ? Polychrome.new : Monochrome.new
+
       io.puts "Total allocated #{total_allocated}"
       io.puts "Total retained #{total_retained}"
       io.puts
@@ -95,14 +97,16 @@ module MemoryProfiler
       nil
     end
 
+    private
+
     def dump_strings(io, title, strings)
       return unless strings
       io.puts "#{title} String Report"
-      io.puts color(:line, "-----------------------------------")
+      io.puts @colorize.line("-----------------------------------")
       strings.each do |string, stats|
-        io.puts "#{stats.reduce(0) { |a, b| a + b[1] }.to_s.rjust(10)}  #{color(:string, (string[0..200].inspect))}"
+        io.puts "#{stats.reduce(0) { |a, b| a + b[1] }.to_s.rjust(10)}  #{@colorize.string((string[0..200].inspect))}"
         stats.sort_by { |x, y| -y }.each do |location, count|
-          io.puts "#{color(:path, count.to_s.rjust(10))}  #{location}"
+          io.puts "#{@colorize.path(count.to_s.rjust(10))}  #{location}"
         end
         io.puts
       end
@@ -111,7 +115,7 @@ module MemoryProfiler
 
     def dump(description, data, io)
       io.puts description
-      io.puts color(:line, "-----------------------------------")
+      io.puts @colorize.line("-----------------------------------")
       if data
         data.each do |item|
           io.puts "#{item[:count].to_s.rjust(10)}  #{item[:data]}"
@@ -121,6 +125,7 @@ module MemoryProfiler
       end
       io.puts
     end
+
   end
 
 end

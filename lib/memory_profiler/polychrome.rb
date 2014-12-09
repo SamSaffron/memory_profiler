@@ -1,15 +1,20 @@
 module MemoryProfiler
-  module Color
 
-    COLORS = {
-        line: :gray,
-        string: :green,
-        path: :gray
-    }
+  class Polychrome
 
-    def color(role, text)
-      self.send COLORS[role], text
+    def path(text)
+      gray(text)
     end
+
+    def string(text)
+      green(text)
+    end
+
+    def line(text)
+      gray(text)
+    end
+
+    private
 
     def black(str)
       "\033[30m#{str}\033[0m"
@@ -87,12 +92,6 @@ module MemoryProfiler
       self.gsub /\033\[\d+m/, "";
     end
 
-  end
-
-  module NoColor
-    def color(role, text)
-      text
-    end
   end
 
 end
