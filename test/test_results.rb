@@ -5,4 +5,5 @@ class TestResults < Minitest::Test
     io = StringIO.new
     MemoryProfiler::Results.new.pretty_print io
   end
+
 end

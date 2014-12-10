@@ -42,7 +42,7 @@ module MemoryProfiler
       end
 
       results = Results.new
-      results.strings_allocated = results.string_report(allocated,top)
+      results.strings_allocated = results.string_report(allocated, top)
 
       GC.enable
 
@@ -60,7 +60,7 @@ module MemoryProfiler
         end
       end
 
-      results.register_results(allocated,retained,top)
+      results.register_results(allocated, retained, top)
       results
     end
 

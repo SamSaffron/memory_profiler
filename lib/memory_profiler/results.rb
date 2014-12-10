@@ -2,7 +2,7 @@ module MemoryProfiler
   class Results
 
     def self.register_type(name, lookup)
-      ["allocated","retained"].product(["objects","memory"]).each do |type, metric|
+      ["allocated", "retained"].product(["objects", "memory"]).each do |type, metric|
         full_name = "#{type}_#{metric}_by_#{name}"
         attr_accessor full_name
 
@@ -10,7 +10,7 @@ module MemoryProfiler
         mapped = lookup
 
         if metric == "memory"
-          mapped = lambda{|stat|
+          mapped = lambda { |stat|
             [lookup.call(stat), stat.memsize]
           }
         end
@@ -20,37 +20,37 @@ module MemoryProfiler
       end
     end
 
-    register_type :gem, lambda{|stat|
-      Helpers.guess_gem("#{stat.file}")
-    }
+    register_type :gem, lambda { |stat|
+                        Helpers.guess_gem("#{stat.file}")
+                      }
 
-    register_type :file, lambda{|stat|
-      stat.file
-    }
+    register_type :file, lambda { |stat|
+                         stat.file
+                       }
 
-    register_type :location, lambda{|stat|
-      "#{stat.file}:#{stat.line}"
-    }
+    register_type :location, lambda { |stat|
+                             "#{stat.file}:#{stat.line}"
+                           }
 
     attr_accessor :strings_retained, :strings_allocated
     attr_accessor :total_retained, :total_allocated
 
     def self.from_raw(allocated, retained, top)
-      self.new.register_results(allocated,retained,top)
+      self.new.register_results(allocated, retained, top)
     end
 
     def register_results(allocated, retained, top)
       @@lookups.each do |name, lookup|
-        mapped = lambda{|tuple|
-            lookup.call(tuple[1])
+        mapped = lambda { |tuple|
+          lookup.call(tuple[1])
         }
 
         result =
-          if name =~ /^allocated/
-            allocated.top_n(top, &mapped)
-          else
-            retained.top_n(top, &mapped)
-          end
+            if name =~ /^allocated/
+              allocated.top_n(top, &mapped)
+            else
+              retained.top_n(top, &mapped)
+            end
 
         self.send "#{name}=", result
       end
@@ -67,57 +67,67 @@ module MemoryProfiler
 
     def string_report(data, top)
       data
-        .reject{|id,stat| stat.class_name != "String"}
-        .map{|id,stat| [ObjectSpace._id2ref(id), "#{stat.file}:#{stat.line}"]}
-        .group_by{|string, location| string}
-        .sort_by{|string, list| -list.count}
-        .first(top)
-        .map{|string,list| [string, list.group_by{|str,location| location}
-                                        .map{|location, locations| [location, locations.count]}]}
+          .reject { |id, stat| stat.class_name != "String" }
+          .map { |id, stat| [ObjectSpace._id2ref(id), "#{stat.file}:#{stat.line}"] }
+          .group_by { |string, location| string }
+          .sort_by { |string, list| -list.count }
+          .first(top)
+          .map { |string, list| [string, list.group_by { |str, location| location }
+                                             .map { |location, locations| [location, locations.count] }] }
     end
 
-    def pretty_print(io = STDOUT)
+    def pretty_print(io = STDOUT, options = {})
+      color_output = options.fetch(:color_output) { io.respond_to?(:isatty) && io.isatty }
+      @colorize = color_output ? Polychrome.new : Monochrome.new
+
       io.puts "Total allocated #{total_allocated}"
       io.puts "Total retained #{total_retained}"
       io.puts
-      ["allocated","retained"]
-        .product(["memory", "objects"])
-        .product(["gem", "file", "location"])
-        .each do |(type, metric), name|
+      ["allocated", "retained"]
+          .product(["memory", "objects"])
+          .product(["gem", "file", "location"])
+          .each do |(type, metric), name|
         dump "#{type} #{metric} by #{name}", self.send("#{type}_#{metric}_by_#{name}"), io
       end
 
       io.puts
-      dump_strings(io, "Allocated",strings_allocated)
+      dump_strings(io, "Allocated", strings_allocated)
       io.puts
-      dump_strings(io, "Retained",strings_retained)
+      dump_strings(io, "Retained", strings_retained)
       nil
     end
+
+    private
 
     def dump_strings(io, title, strings)
       return unless strings
       io.puts "#{title} String Report"
-      io.puts "-----------------------------------"
+      io.puts @colorize.line("-----------------------------------")
       strings.each do |string, stats|
-        io.puts "#{string[0..200].inspect} x #{stats.reduce(0){|a,b| a + b[1]}}"
-        stats.sort_by{|x,y| -y}.each do |location, count|
-          io.puts "    #{location} x #{count}"
+        io.puts "#{stats.reduce(0) { |a, b| a + b[1] }.to_s.rjust(10)}  #{@colorize.string((string[0..200].inspect))}"
+        stats.sort_by { |x, y| -y }.each do |location, count|
+          io.puts "#{@colorize.path(count.to_s.rjust(10))}  #{location}"
         end
+        io.puts
       end
       nil
     end
 
     def dump(description, data, io)
       io.puts description
-      io.puts "-----------------------------------"
+      io.puts @colorize.line("-----------------------------------")
       if data
         data.each do |item|
-          io.puts "#{item[:data]} x #{item[:count]}"
+          io.puts "#{item[:count].to_s.rjust(10)}  #{item[:data]}"
         end
       else
         io.puts "NO DATA"
       end
       io.puts
     end
+
   end
+
 end
+
+
