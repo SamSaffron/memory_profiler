@@ -13,7 +13,7 @@ module MemoryProfiler
           self.dup
         end
 
-      sorted.sort!
+      sorted.compact!.sort!
 
       found = []
 
