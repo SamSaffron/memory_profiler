@@ -14,6 +14,7 @@ module MemoryProfiler
         end
 
       sorted.compact!
+      sorted.reject! { |row| row[0].nil? }
       sorted.sort!
 
       found = []
