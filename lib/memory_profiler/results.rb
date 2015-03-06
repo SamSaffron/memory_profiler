@@ -25,7 +25,7 @@ module MemoryProfiler
                       }
 
     register_type :file, lambda { |stat|
-                         stat.file
+                         stat.file || "(no name)"
                        }
 
     register_type :location, lambda { |stat|

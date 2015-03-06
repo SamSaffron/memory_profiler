@@ -310,6 +310,10 @@ Memory profiler also performs some String analysis to help you find strings that
 
 ## Changelog
 
+### 0.9.0
+- This is quite stable, upping version to reflect
+- Fixed bug where it would crash when location was nil for some reason
+
 
 ### 0.0.4
 - Added compatability with released version of Ruby 2.1.0
