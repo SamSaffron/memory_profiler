@@ -14,6 +14,7 @@ module MemoryProfiler
       @top          = opts[:top] || 50
       @trace        = opts[:trace]
       @ignore_files = opts[:ignore_files]
+      @allow_files = Array(opts[:allow_files])
     end
 
     # Helper for generating new reporter and running against block
@@ -73,6 +74,11 @@ module MemoryProfiler
       @ignore_files && @ignore_files =~ file
     end
 
+    def allow_file?(file)
+      return true if @allow_files.empty?
+      !/#{@allow_files.join('|')}/.match(file).to_s.empty?
+    end
+
     # Iterates through objects in memory of a given generation.
     # Stores results along with meta data of objects collected.
     def object_list(generation, rvalue_size)
@@ -93,7 +99,7 @@ module MemoryProfiler
 
       objs.each do |obj|
         file = ObjectSpace.allocation_sourcefile(obj)
-        next if ignore_file?(file)
+        next if !allow_file?(file) || ignore_file?(file)
 
         line       = ObjectSpace.allocation_sourceline(obj)
         class_path = ObjectSpace.allocation_class_path(obj)

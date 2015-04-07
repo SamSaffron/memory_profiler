@@ -73,7 +73,7 @@ module MemoryProfiler
           .sort_by { |string, list| -list.count }
           .first(top)
           .map { |string, list| [string, list.group_by { |str, location| location }
-                                             .map { |location, locations| [location, locations.count] }] }
+          .map { |location, locations| [location, locations.count] }] }
     end
 
     def pretty_print(io = STDOUT, options = {})
@@ -87,8 +87,8 @@ module MemoryProfiler
           .product(["memory", "objects"])
           .product(["gem", "file", "location"])
           .each do |(type, metric), name|
-        dump "#{type} #{metric} by #{name}", self.send("#{type}_#{metric}_by_#{name}"), io
-      end
+            dump "#{type} #{metric} by #{name}", self.send("#{type}_#{metric}_by_#{name}"), io
+          end
 
       io.puts
       dump_strings(io, "Allocated", strings_allocated)
