@@ -29,6 +29,31 @@ end
 report.pretty_print
 ```
 
+You can use `allow_files` option for displaying only lines which contain string or array with strings:
+
+```
+pry> require 'memory_profiler'
+pry> MemoryProfiler.report(allow_files: 'rubygems'){ require 'mime-types'  }.pretty_print
+Total allocated 82375
+Total retained 22618
+
+allocated memory by gem
+-----------------------------------
+rubygems x 305879
+
+allocated memory by file
+-----------------------------------
+/home/sam/.rbenv/versions/2.1.0-github/lib/ruby/2.1.0/rubygems/core_ext/kernel_require.rb x 285433
+/home/sam/.rbenv/versions/2.1.0-github/lib/ruby/2.1.0/rubygems/basic_specification.rb x 18597
+/home/sam/.rbenv/versions/2.1.0-github/lib/ruby/2.1.0/rubygems.rb x 2218
+/home/sam/.rbenv/versions/2.1.0-github/lib/ruby/2.1.0/rubygems/specification.rb x 1169
+/home/sam/.rbenv/versions/2.1.0-github/lib/ruby/2.1.0/rubygems/defaults.rb x 520
+/home/sam/.rbenv/versions/2.1.0-github/lib/ruby/2.1.0/rubygems/core_ext/kernel_gem.rb x 80
+/home/sam/.rbenv/versions/2.1.0-github/lib/ruby/2.1.0/rubygems/version.rb x 80
+
+. . .
+```
+
 Example Session:
 
 You can easily use memory_profiler to profile require impact of a gem, for example:
