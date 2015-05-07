@@ -33,7 +33,7 @@ You can use `allow_files` option for displaying only lines which contain string 
 
 ```
 pry> require 'memory_profiler'
-pry> MemoryProfiler.report(allow_files: 'rubygems'){ require 'mime-types'  }.pretty_print
+pry> MemoryProfiler.report(allow_files: 'rubygems'){ require 'mime-types' }.pretty_print
 Total allocated 82375
 Total retained 22618
 
@@ -50,6 +50,23 @@ allocated memory by file
 /home/sam/.rbenv/versions/2.1.0-github/lib/ruby/2.1.0/rubygems/defaults.rb x 520
 /home/sam/.rbenv/versions/2.1.0-github/lib/ruby/2.1.0/rubygems/core_ext/kernel_gem.rb x 80
 /home/sam/.rbenv/versions/2.1.0-github/lib/ruby/2.1.0/rubygems/version.rb x 80
+
+. . .
+```
+
+Also you can print report to file. For this use `pretty_print` method with `to_file` option and `path_to_your_log_file` string:
+```
+$ pry
+pry> require 'memory_profiler'
+pry> MemoryProfiler.report(allow_files: 'rubygems'){ require 'mime-types' }.pretty_print(to_file: 'path_to_your_log_file')
+
+$ less my_report.txt
+Total allocated 82375
+Total retained 22618
+
+allocated memory by gem
+-----------------------------------
+rubygems x 305879
 
 . . .
 ```
@@ -341,7 +358,7 @@ Memory profiler also performs some String analysis to help you find strings that
 
 
 ### 0.0.4
-- Added compatability with released version of Ruby 2.1.0
+- Added compatibility with released version of Ruby 2.1.0
 - Cleanup to use latest APIs available in 2.1.0
 
 ### 0.0.3

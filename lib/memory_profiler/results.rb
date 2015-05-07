@@ -76,7 +76,9 @@ module MemoryProfiler
           .map { |location, locations| [location, locations.count] }] }
     end
 
-    def pretty_print(io = STDOUT, options = {})
+    def pretty_print(io = STDOUT, **options)
+      io = File.open(options[:to_file], "w") if options[:to_file]
+
       color_output = options.fetch(:color_output) { io.respond_to?(:isatty) && io.isatty }
       @colorize = color_output ? Polychrome.new : Monochrome.new
 
@@ -94,7 +96,8 @@ module MemoryProfiler
       dump_strings(io, "Allocated", strings_allocated)
       io.puts
       dump_strings(io, "Retained", strings_retained)
-      nil
+
+      io.close if io.is_a? File
     end
 
     private
