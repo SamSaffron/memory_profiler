@@ -1,8 +1,12 @@
 # MemoryProfiler
 
-A memory profiler for Ruby 2.1.0
+A memory profiler for Ruby 
 
 [![Build Status](https://travis-ci.org/SamSaffron/memory_profiler.png?branch=master)](https://travis-ci.org/SamSaffron/memory_profiler)
+
+## Requirements 
+
+Ruby(MRI) Version 2.1.0 and above. 
 
 ## Installation
 
