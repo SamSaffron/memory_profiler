@@ -29,6 +29,8 @@ end
 report.pretty_print
 ```
 
+## Options
+
 You can use `allow_files` option for displaying only lines which contain string or array with strings:
 
 ```
@@ -71,7 +73,15 @@ rubygems x 305879
 . . .
 ```
 
-Example Session:
+Other options include:
+
+* `top`: maximum number of entries to display in a report
+* `trace`: an array of classes for which you explicitly want to trace object allocations
+* `ignore_files`: a regular expression used to exclude certain files from tracing (opposite of `allow_files`)
+
+Check out `Reporter#new` for more details.
+
+## Example Session
 
 You can easily use memory_profiler to profile require impact of a gem, for example:
 
