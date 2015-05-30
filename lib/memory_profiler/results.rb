@@ -68,7 +68,7 @@ module MemoryProfiler
     def string_report(data, top)
       data
           .reject { |id, stat| stat.class_name != "String" }
-          .map { |id, stat| [begin; ObjectSpace._id2ref(id); rescue "__UNKNOWN__"; end, "#{stat.file}:#{stat.line}"] }
+          .map { |id, stat| [begin; ObjectSpace._id2ref(id); rescue; "__UNKNOWN__"; end, "#{stat.file}:#{stat.line}"] }
           .group_by { |string, location| string }
           .sort_by { |string, list| -list.count }
           .first(top)
