@@ -366,6 +366,9 @@ Memory profiler also performs some String analysis to help you find strings that
 
 ## Changelog
 
+### 0.9.2
+- Fix incorrect syntax in rescue clause
+
 ### 0.9.0
 - This is quite stable, upping version to reflect
 - Fixed bug where it would crash when location was nil for some reason
