@@ -63,9 +63,9 @@ module MemoryProfiler
       self.strings_retained = string_report(retained, top)
 
       self.total_allocated = allocated.count
-      self.total_allocated_memsize = allocated.values.sum(&:memsize)
+      self.total_allocated_memsize = allocated.values.map(&:memsize).inject(:+)
       self.total_retained = retained.count
-      self.total_retained_memsize = retained.values.sum(&:memsize)
+      self.total_retained_memsize = retained.values.map(&:memsize).inject(:+)
 
       self
     end
