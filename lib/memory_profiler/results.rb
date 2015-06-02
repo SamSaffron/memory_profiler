@@ -32,6 +32,10 @@ module MemoryProfiler
                              "#{stat.file}:#{stat.line}"
                            }
 
+    register_type :class, lambda { |stat|
+                             "#{stat.class_name}"
+                           }
+
     attr_accessor :strings_retained, :strings_allocated
     attr_accessor :total_retained, :total_allocated
 
@@ -87,7 +91,7 @@ module MemoryProfiler
       io.puts
       ["allocated", "retained"]
           .product(["memory", "objects"])
-          .product(["gem", "file", "location"])
+          .product(["gem", "file", "location", "class"])
           .each do |(type, metric), name|
             dump "#{type} #{metric} by #{name}", self.send("#{type}_#{metric}_by_#{name}"), io
           end
