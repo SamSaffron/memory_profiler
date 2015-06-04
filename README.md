@@ -366,6 +366,9 @@ Memory profiler also performs some String analysis to help you find strings that
 
 ## Changelog
 
+### 0.9.3
+- Add class reporting
+
 ### 0.9.2
 - Fix incorrect syntax in rescue clause
 
