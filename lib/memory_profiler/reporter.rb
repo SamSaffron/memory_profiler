@@ -109,7 +109,8 @@ module MemoryProfiler
         begin
           object_id = obj.__id__
 
-          memsize = ObjectSpace.memsize_of(obj) + rvalue_size
+          memsize = ObjectSpace.memsize_of(obj)
+          memsize += rvalue_size if RUBY_VERSION < '2.2'.freeze
           # compensate for API bug
           memsize = rvalue_size if memsize > 100_000_000_000
           results[object_id] = Stat.new(class_name, file, line, class_path, method_id, memsize)
