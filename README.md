@@ -366,6 +366,10 @@ Memory profiler also performs some String analysis to help you find strings that
 
 ## Changelog
 
+### 0.9.4
+- FIX: remove incorrect RVALUE offset on 2.2  @dgynn
+- FEATURE: add total memory usage @dgynn
+
 ### 0.9.3
 - Add class reporting
 
