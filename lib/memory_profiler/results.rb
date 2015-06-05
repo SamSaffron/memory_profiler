@@ -63,9 +63,9 @@ module MemoryProfiler
       self.strings_retained = string_report(retained, top)
 
       self.total_allocated = allocated.count
-      self.total_allocated_memsize = allocated.values.map(&:memsize).inject(:+)
+      self.total_allocated_memsize = allocated.values.map(&:memsize).inject(:+) || 0
       self.total_retained = retained.count
-      self.total_retained_memsize = retained.values.map(&:memsize).inject(:+)
+      self.total_retained_memsize = retained.values.map(&:memsize).inject(:+) || 0
 
       self
     end
@@ -89,8 +89,8 @@ module MemoryProfiler
       color_output = options.fetch(:color_output) { io.respond_to?(:isatty) && io.isatty }
       @colorize = color_output ? Polychrome.new : Monochrome.new
 
-      io.puts "Total allocated #{total_allocated_memsize} (#{total_allocated})"
-      io.puts "Total retained #{total_retained_memsize} (#{total_retained})"
+      io.puts "Total allocated: #{total_allocated_memsize} bytes (#{total_allocated} objects)"
+      io.puts "Total retained:  #{total_retained_memsize} bytes (#{total_retained} objects)"
 
       io.puts
       ["allocated", "retained"]
