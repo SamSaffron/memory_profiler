@@ -1,14 +1,13 @@
 module MemoryProfiler
   class Stat
 
-    attr_reader :class_name, :file, :line, :class_path, :method_id, :memsize
+    attr_reader :class_name, :file, :line, :class_path, :memsize
 
-    def initialize(class_name, file, line, class_path, method_id, memsize)
+    def initialize(class_name, file, line, class_path, memsize)
       @class_name = class_name
       @file = file
       @line = line
       @class_path = class_path
-      @method_id = method_id
       @memsize = memsize
     end
 
