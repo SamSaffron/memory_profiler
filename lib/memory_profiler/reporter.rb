@@ -51,6 +51,8 @@ module MemoryProfiler
 
       retained = StatHash.new
       ObjectSpace.each_object do |obj|
+        retained_generation = ObjectSpace.allocation_generation(obj)
+        next unless retained_generation && generation == retained_generation
         begin
           found = allocated[obj.__id__]
           retained[obj.__id__] = found if found
@@ -60,6 +62,7 @@ module MemoryProfiler
           # but it is quite rare
         end
       end
+      ObjectSpace.trace_object_allocations_clear
 
       results.register_results(allocated, retained, top)
       results
