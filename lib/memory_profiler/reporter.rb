@@ -48,8 +48,7 @@ module MemoryProfiler
 
       retained = StatHash.new
       ObjectSpace.each_object do |obj|
-        retained_generation = ObjectSpace.allocation_generation(obj)
-        next unless retained_generation && generation == retained_generation
+        next unless ObjectSpace.allocation_generation(obj) == generation
         begin
           found = allocated[obj.__id__]
           retained[obj.__id__] = found if found
@@ -81,7 +80,7 @@ module MemoryProfiler
       objs = []
 
       ObjectSpace.each_object do |obj|
-        next unless generation == ObjectSpace.allocation_generation(obj)
+        next unless ObjectSpace.allocation_generation(obj) == generation
         begin
           if !trace || trace.include?(obj.class)
             objs << obj
