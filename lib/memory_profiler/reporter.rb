@@ -85,7 +85,6 @@ module MemoryProfiler
     # Stores results along with meta data of objects collected.
     def object_list(generation, rvalue_size)
 
-      results = StatHash.new
       objs = []
 
       ObjectSpace.each_object do |obj|
@@ -99,7 +98,7 @@ module MemoryProfiler
         end
       end
 
-      objs.each do |obj|
+      objs.map! do |obj|
         file = ObjectSpace.allocation_sourcefile(obj)
         next if !allow_file?(file) || ignore_file?(file)
 
@@ -115,13 +114,14 @@ module MemoryProfiler
           memsize += rvalue_size if RUBY_VERSION < '2.2'.freeze
           # compensate for API bug
           memsize = rvalue_size if memsize > 100_000_000_000
-          results[object_id] = Stat.new(class_name, file, line, class_path, method_id, memsize)
+          [object_id, Stat.new(class_name, file, line, class_path, method_id, memsize)]
         rescue
           # __id__ is not defined, give up
         end
       end
+      objs.compact!
 
-      results
+      StatHash[objs]
     end
   end
 end
