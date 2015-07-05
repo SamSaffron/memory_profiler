@@ -21,7 +21,7 @@ module MemoryProfiler
     end
 
     register_type :gem, lambda { |stat|
-                        Helpers.guess_gem("#{stat.file}")
+                        Helpers.guess_gem(stat.file)
                       }
 
     register_type :file, lambda { |stat|
@@ -29,11 +29,11 @@ module MemoryProfiler
                        }
 
     register_type :location, lambda { |stat|
-                             "#{stat.file}:#{stat.line}"
+                             stat.location
                            }
 
     register_type :class, lambda { |stat|
-                             "#{stat.class_name}"
+                             stat.class_name
                            }
 
     attr_accessor :strings_retained, :strings_allocated
@@ -75,7 +75,7 @@ module MemoryProfiler
     def string_report(data, top)
       data
           .reject { |id, stat| stat.class_name != "String" }
-          .map { |id, stat| [begin; ObjectSpace._id2ref(id); rescue; "__UNKNOWN__"; end, "#{stat.file}:#{stat.line}"] }
+          .map { |id, stat| [begin; ObjectSpace._id2ref(id); rescue; "__UNKNOWN__"; end, stat.location] }
           .group_by { |string, location| string }
           .sort_by { |string, list| -list.count }
           .first(top)
