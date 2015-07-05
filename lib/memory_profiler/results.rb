@@ -67,6 +67,8 @@ module MemoryProfiler
       self.total_retained = retained.count
       self.total_retained_memsize = retained.values.map(&:memsize).inject(:+) || 0
 
+      Helpers.reset_gem_guess_cache
+
       self
     end
 
