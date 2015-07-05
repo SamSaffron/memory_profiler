@@ -50,5 +50,18 @@ module MemoryProfiler
         .sort!{|x,y| x[:count] <=> y[:count] }
         .reverse
     end
+
+    # Fast approach for determining the top_n entries in a list.
+    def max_n(max = 10, &block)
+
+      sorted = self.map(&block)
+
+      found = sorted.group_by { |item, _weight| item }.
+        map { |key, values| [key, values.reduce(0) { |sum, item| _key, weight = item ; sum += (weight || 1) }] }.
+        max_by(max) { |data| data[1] }.
+        map! { |metric, total| { data: metric, count: total } }.
+        sort!{ |x, y| y[:count] <=> x[:count] }
+
+    end
   end
 end

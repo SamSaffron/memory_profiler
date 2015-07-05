@@ -52,9 +52,9 @@ module MemoryProfiler
 
         result =
             if name.start_with?('allocated'.freeze)
-              allocated.top_n(top, &mapped)
+              allocated.max_n(top, &mapped)
             else
-              retained.top_n(top, &mapped)
+              retained.max_n(top, &mapped)
             end
 
         self.send "#{name}=", result
