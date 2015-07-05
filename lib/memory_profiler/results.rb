@@ -51,7 +51,7 @@ module MemoryProfiler
         }
 
         result =
-            if name =~ /^allocated/
+            if name.start_with?('allocated'.freeze)
               allocated.top_n(top, &mapped)
             else
               retained.top_n(top, &mapped)
@@ -63,21 +63,19 @@ module MemoryProfiler
       self.strings_retained = string_report(retained, top)
 
       self.total_allocated = allocated.count
-      self.total_allocated_memsize = allocated.values.map(&:memsize).inject(:+) || 0
+      self.total_allocated_memsize = allocated.values.map!(&:memsize).inject(0, :+)
       self.total_retained = retained.count
-      self.total_retained_memsize = retained.values.map(&:memsize).inject(:+) || 0
+      self.total_retained_memsize = retained.values.map!(&:memsize).inject(0, :+)
 
       Helpers.reset_gem_guess_cache
 
       self
     end
 
-    StringStat = Struct.new(:string, :count, :location)
-
     def string_report(data, top)
       data
-          .reject { |id, stat| stat.class_name != "String" }
-          .map { |id, stat| [begin; ObjectSpace._id2ref(id); rescue; "__UNKNOWN__"; end, stat.location] }
+          .reject { |id, stat| stat.class_name != "String".freeze }
+          .map { |id, stat| [begin; ObjectSpace._id2ref(id); rescue; "__UNKNOWN__".freeze; end, stat.location] }
           .group_by { |string, location| string }
           .sort_by { |string, list| -list.count }
           .first(top)

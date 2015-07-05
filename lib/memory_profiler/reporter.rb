@@ -30,9 +30,6 @@ module MemoryProfiler
     # @return [MemoryProfiler::Results]
     def run(&block)
 
-      allocated, rvalue_size = nil
-
-      rvalue_size = GC::INTERNAL_CONSTANTS[:RVALUE_SIZE]
       Helpers.full_gc
       GC.disable
 
@@ -40,7 +37,7 @@ module MemoryProfiler
       ObjectSpace.trace_object_allocations do
         block.call
       end
-      allocated = object_list(generation, rvalue_size)
+      allocated = object_list(generation)
 
       results = Results.new
       results.strings_allocated = results.string_report(allocated, top)
@@ -68,10 +65,6 @@ module MemoryProfiler
       results
     end
 
-    def trace_all?
-      !trace
-    end
-
     def ignore_file?(file)
       @ignore_files && @ignore_files =~ file
     end
@@ -83,20 +76,23 @@ module MemoryProfiler
 
     # Iterates through objects in memory of a given generation.
     # Stores results along with meta data of objects collected.
-    def object_list(generation, rvalue_size)
+    def object_list(generation)
 
       objs = []
 
       ObjectSpace.each_object do |obj|
         next unless generation == ObjectSpace.allocation_generation(obj)
         begin
-          if trace_all? || trace.include?(obj.class)
+          if !trace || trace.include?(obj.class)
             objs << obj
           end
         rescue
           # may not respond to class so skip
         end
       end
+
+      rvalue_size = GC::INTERNAL_CONSTANTS[:RVALUE_SIZE]
+      rvalue_size_adjustment = RUBY_VERSION < '2.2' ? rvalue_size : 0
 
       objs.map! do |obj|
         file = ObjectSpace.allocation_sourcefile(obj)
@@ -106,12 +102,11 @@ module MemoryProfiler
         class_path = ObjectSpace.allocation_class_path(obj)
         method_id  = ObjectSpace.allocation_method_id(obj)
 
-        class_name = obj.class.name rescue "BasicObject"
+        class_name = obj.class.name rescue "BasicObject".freeze
         begin
           object_id = obj.__id__
 
-          memsize = ObjectSpace.memsize_of(obj)
-          memsize += rvalue_size if RUBY_VERSION < '2.2'.freeze
+          memsize = ObjectSpace.memsize_of(obj) + rvalue_size_adjustment
           # compensate for API bug
           memsize = rvalue_size if memsize > 100_000_000_000
           [object_id, Stat.new(class_name, file, line, class_path, method_id, memsize)]
