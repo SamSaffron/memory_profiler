@@ -36,11 +36,11 @@ module MemoryProfiler
       Helpers.full_gc
       GC.disable
 
+      generation = GC.count
       ObjectSpace.trace_object_allocations do
-        generation = GC.count
         block.call
-        allocated = object_list(generation, rvalue_size)
       end
+      allocated = object_list(generation, rvalue_size)
 
       results = Results.new
       results.strings_allocated = results.string_report(allocated, top)
@@ -70,7 +70,6 @@ module MemoryProfiler
     end
 
     def ignore_file?(file)
-      return true if file == __FILE__
       @ignore_files && @ignore_files =~ file
     end
 
