@@ -60,6 +60,7 @@ module MemoryProfiler
         self.send "#{name}=", result
       end
 
+      self.strings_allocated = string_report(allocated, top)
       self.strings_retained = string_report(retained, top)
 
       self.total_allocated = allocated.count

@@ -30,7 +30,7 @@ module MemoryProfiler
     # @return [MemoryProfiler::Results]
     def run(&block)
 
-      Helpers.full_gc
+      GC.start
       GC.disable
 
       generation = GC.count
@@ -38,15 +38,14 @@ module MemoryProfiler
         block.call
       end
       allocated = object_list(generation)
-
-      results = Results.new
-      results.strings_allocated = results.string_report(allocated, top)
+      retained = StatHash.new
 
       GC.enable
+      GC.start
 
-      Helpers.full_gc
+      # Caution: Do not allocate any new Objects between the call to GC.start and the completion of the retained
+      #          lookups. It is likely that a new Object would reuse an object_id from a GC'd object.
 
-      retained = StatHash.new
       ObjectSpace.each_object do |obj|
         next unless ObjectSpace.allocation_generation(obj) == generation
         begin
@@ -60,6 +59,7 @@ module MemoryProfiler
       end
       ObjectSpace.trace_object_allocations_clear
 
+      results = Results.new
       results.register_results(allocated, retained, top)
       results
     end
