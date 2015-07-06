@@ -55,7 +55,8 @@ module MemoryProfiler
           .keep_if { |stat| stat.klass == String }
           .map! { |stat| [stat.string_value, stat.location] }
           .group_by { |string, _location| string }
-          .max_by(top) {|_string, list| list.count }
+          .sort_by {|_string, list| -list.count }
+          .first(top)
           .map { |string, list| [string, list.group_by { |_string, location| location }
                                              .map { |location, locations| [location, locations.count] }
                                 ]

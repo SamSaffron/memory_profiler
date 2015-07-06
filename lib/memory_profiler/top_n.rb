@@ -60,10 +60,10 @@ module MemoryProfiler
       stat_totals = stats_by_metric.group_by { |metric_value, _memsize| metric_value }.
           map { |key, values| [key, values.reduce(0) { |sum, item| _key, memsize = item ; sum + memsize }, values.count] }
 
-      stats_by_memsize = stat_totals.max_by(max) { |data| data[1] }.
-          map! { |metric, total| { data: metric, count: total } }
-      stats_by_count   = stat_totals.max_by(max) { |data| data[2] }.
-          map! { |metric, total| { data: metric, count: total } }
+      stats_by_memsize = stat_totals.sort_by { |data| -data[1] }.first(max).
+          map! { |metric, memsize, _count| { data: metric, count: memsize } }
+      stats_by_count   = stat_totals.sort_by { |data| -data[2] }.first(max).
+          map! { |metric, _memsize, count| { data: metric, count: count } }
 
       [stats_by_memsize, stats_by_count]
 
