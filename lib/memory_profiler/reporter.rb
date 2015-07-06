@@ -99,15 +99,16 @@ module MemoryProfiler
 
         line       = ObjectSpace.allocation_sourceline(obj)
         class_path = ObjectSpace.allocation_class_path(obj)
+        klass      = obj.class
+        string     = obj.dup if klass == String
 
-        class_name = obj.class.name rescue "BasicObject".freeze
         begin
           object_id = obj.__id__
 
           memsize = ObjectSpace.memsize_of(obj) + rvalue_size_adjustment
           # compensate for API bug
           memsize = rvalue_size if memsize > 100_000_000_000
-          [object_id, Stat.new(class_name, file, line, class_path, memsize)]
+          [object_id, Stat.new(klass, file, line, class_path, memsize, string)]
         rescue
           # __id__ is not defined, give up
         end

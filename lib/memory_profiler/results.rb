@@ -73,14 +73,15 @@ module MemoryProfiler
     end
 
     def string_report(data, top)
-      data
-          .reject { |id, stat| stat.class_name != "String".freeze }
-          .map { |id, stat| [begin; ObjectSpace._id2ref(id); rescue; "__UNKNOWN__".freeze; end, stat.location] }
-          .group_by { |string, location| string }
-          .sort_by { |string, list| -list.count }
-          .first(top)
-          .map { |string, list| [string, list.group_by { |str, location| location }
-          .map { |location, locations| [location, locations.count] }] }
+      data.values
+          .keep_if { |stat| stat.klass == String }
+          .map! { |stat| [stat.string_value, stat.location] }
+          .group_by { |string, _location| string }
+          .max_by(top) {|_string, list| list.count }
+          .map { |string, list| [string, list.group_by { |_string, location| location }
+                                             .map { |location, locations| [location, locations.count] }
+                                ]
+          }
     end
 
     def pretty_print(io = STDOUT, **options)
