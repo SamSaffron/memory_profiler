@@ -51,16 +51,21 @@ module MemoryProfiler
         .reverse
     end
 
-    # Fast approach for determining the top_n entries in a list.
-    def max_n(max = 10, &block)
+    # Fast approach for determining the top_n entries in a list of Stat objects.
+    # Returns results for both memory (memsize summed) and objects allocated (count) as a tuple.
+    def max_n(max, metric)
 
-      sorted = self.map(&block)
+      stats_by_metric = self.values.map! { |stat| [stat.send(metric), stat.memsize] }
 
-      found = sorted.group_by { |item, _weight| item }.
-        map { |key, values| [key, values.reduce(0) { |sum, item| _key, weight = item ; sum += (weight || 1) }] }.
-        max_by(max) { |data| data[1] }.
-        map! { |metric, total| { data: metric, count: total } }.
-        sort!{ |x, y| y[:count] <=> x[:count] }
+      stat_totals = stats_by_metric.group_by { |metric_value, _memsize| metric_value }.
+          map { |key, values| [key, values.reduce(0) { |sum, item| _key, memsize = item ; sum + memsize }, values.count] }
+
+      stats_by_memsize = stat_totals.max_by(max) { |data| data[1] }.
+          map! { |metric, total| { data: metric, count: total } }
+      stats_by_count   = stat_totals.max_by(max) { |data| data[2] }.
+          map! { |metric, total| { data: metric, count: total } }
+
+      [stats_by_memsize, stats_by_count]
 
     end
   end

@@ -1,32 +1,19 @@
 module MemoryProfiler
   class Results
 
-    def self.register_type(name, lookup)
+    def self.register_type(name, stat_attribute)
+      @@lookups ||= []
+      @@lookups << [name, stat_attribute]
+
       ["allocated", "retained"].product(["objects", "memory"]).each do |type, metric|
-        full_name = "#{type}_#{metric}_by_#{name}"
-        attr_accessor full_name
-
-        @@lookups ||= []
-        mapped = lookup
-
-        if metric == "memory"
-          mapped = lambda { |stat|
-            [lookup.call(stat), stat.memsize]
-          }
-        end
-
-        @@lookups << [full_name, mapped]
-
+        attr_accessor "#{type}_#{metric}_by_#{name}"
       end
     end
 
-    register_type :gem, lambda { |stat| stat.gem }
-
-    register_type :file, lambda { |stat| stat.file }
-
-    register_type :location, lambda { |stat| stat.location }
-
-    register_type :class, lambda { |stat| stat.class_name }
+    register_type 'gem', :gem
+    register_type 'file', :file
+    register_type 'location', :location
+    register_type 'class', :class_name
 
     attr_accessor :strings_retained, :strings_allocated
     attr_accessor :total_retained, :total_allocated
@@ -37,20 +24,20 @@ module MemoryProfiler
     end
 
     def register_results(allocated, retained, top)
-      @@lookups.each do |name, lookup|
-        mapped = lambda { |tuple|
-          lookup.call(tuple[1])
-        }
 
-        result =
-            if name.start_with?('allocated'.freeze)
-              allocated.max_n(top, &mapped)
-            else
-              retained.max_n(top, &mapped)
-            end
+      @@lookups.each do |name, stat_attribute|
 
-        self.send "#{name}=", result
+        memsize_results, count_results = allocated.max_n(top, stat_attribute)
+
+        self.send("allocated_memory_by_#{name}=", memsize_results)
+        self.send("allocated_objects_by_#{name}=", count_results)
+
+        memsize_results, count_results = retained.max_n(top, stat_attribute)
+
+        self.send("retained_memory_by_#{name}=", memsize_results)
+        self.send("retained_objects_by_#{name}=", count_results)
       end
+
 
       self.strings_allocated = string_report(allocated, top)
       self.strings_retained = string_report(retained, top)
@@ -59,8 +46,6 @@ module MemoryProfiler
       self.total_allocated_memsize = allocated.values.map!(&:memsize).inject(0, :+)
       self.total_retained = retained.count
       self.total_retained_memsize = retained.values.map!(&:memsize).inject(0, :+)
-
-      Helpers.reset_gem_guess_cache
 
       self
     end

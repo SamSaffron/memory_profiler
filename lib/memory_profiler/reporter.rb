@@ -108,12 +108,14 @@ module MemoryProfiler
           memsize = ObjectSpace.memsize_of(obj) + rvalue_size_adjustment
           # compensate for API bug
           memsize = rvalue_size if memsize > 100_000_000_000
-          [object_id, Stat.new(klass, file, line, class_path, memsize, string)]
+          [object_id, MemoryProfiler::Stat.new(klass, file, line, class_path, memsize, string)]
         rescue
           # __id__ is not defined, give up
         end
       end
       objs.compact!
+
+      Helpers.reset_gem_guess_cache
 
       StatHash[objs]
     end
