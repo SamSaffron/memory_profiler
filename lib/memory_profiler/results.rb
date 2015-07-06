@@ -20,21 +20,13 @@ module MemoryProfiler
       end
     end
 
-    register_type :gem, lambda { |stat|
-                        Helpers.guess_gem(stat.file)
-                      }
+    register_type :gem, lambda { |stat| stat.gem }
 
-    register_type :file, lambda { |stat|
-                         stat.file || "(no name)"
-                       }
+    register_type :file, lambda { |stat| stat.file }
 
-    register_type :location, lambda { |stat|
-                             stat.location
-                           }
+    register_type :location, lambda { |stat| stat.location }
 
-    register_type :class, lambda { |stat|
-                             stat.class_name
-                           }
+    register_type :class, lambda { |stat| stat.class_name }
 
     attr_accessor :strings_retained, :strings_allocated
     attr_accessor :total_retained, :total_allocated
