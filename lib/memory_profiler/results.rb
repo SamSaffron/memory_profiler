@@ -52,7 +52,7 @@ module MemoryProfiler
 
     def string_report(data, top)
       data.values
-          .keep_if { |stat| stat.klass == String }
+          .keep_if { |stat| stat.class_name == 'String'.freeze }
           .map! { |stat| [stat.string_value, stat.location] }
           .group_by { |string, _location| string }
           .sort_by {|_string, list| -list.count }

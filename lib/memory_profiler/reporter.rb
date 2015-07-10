@@ -92,14 +92,16 @@ module MemoryProfiler
 
       rvalue_size = GC::INTERNAL_CONSTANTS[:RVALUE_SIZE]
       rvalue_size_adjustment = RUBY_VERSION < '2.2' ? rvalue_size : 0
+      helper = Helpers.new
 
       objs.map! do |obj|
         file = ObjectSpace.allocation_sourcefile(obj)
         next if !allow_file?(file) || ignore_file?(file)
 
         line       = ObjectSpace.allocation_sourceline(obj)
-        class_path = ObjectSpace.allocation_class_path(obj)
         klass      = obj.class
+        class_name = klass.name
+        gem        = helper.guess_gem(file)
         string     = obj.dup if klass == String
 
         begin
@@ -108,14 +110,12 @@ module MemoryProfiler
           memsize = ObjectSpace.memsize_of(obj) + rvalue_size_adjustment
           # compensate for API bug
           memsize = rvalue_size if memsize > 100_000_000_000
-          [object_id, MemoryProfiler::Stat.new(klass, file, line, class_path, memsize, string)]
+          [object_id, MemoryProfiler::Stat.new(class_name, gem, file, line, memsize, string)]
         rescue
           # __id__ is not defined, give up
         end
       end
       objs.compact!
-
-      Helpers.reset_gem_guess_cache
 
       StatHash[objs]
     end
