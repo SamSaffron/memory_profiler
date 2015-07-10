@@ -3,6 +3,7 @@ module MemoryProfiler
 
     def initialize
       @gem_guess_cache = Hash.new
+      @location_cache = Hash.new({})
     end
 
     def guess_gem(path)
@@ -16,6 +17,10 @@ module MemoryProfiler
         else
           "other".freeze
         end
+    end
+
+    def lookup_location(file, line)
+      @location_cache[file][line] ||= "#{file}:#{line}"
     end
 
   end

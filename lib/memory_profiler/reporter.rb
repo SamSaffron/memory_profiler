@@ -95,10 +95,11 @@ module MemoryProfiler
       helper = Helpers.new
 
       objs.map! do |obj|
-        file = ObjectSpace.allocation_sourcefile(obj)
+        file = ObjectSpace.allocation_sourcefile(obj) || "(no name)".freeze
         next if !allow_file?(file) || ignore_file?(file)
 
         line       = ObjectSpace.allocation_sourceline(obj)
+        location   = helper.lookup_location(file, line)
         klass      = obj.class
         class_name = klass.name
         gem        = helper.guess_gem(file)
@@ -110,7 +111,7 @@ module MemoryProfiler
           memsize = ObjectSpace.memsize_of(obj) + rvalue_size_adjustment
           # compensate for API bug
           memsize = rvalue_size if memsize > 100_000_000_000
-          [object_id, MemoryProfiler::Stat.new(class_name, gem, file, line, memsize, string)]
+          [object_id, MemoryProfiler::Stat.new(class_name, gem, file, location, memsize, string)]
         rescue
           # __id__ is not defined, give up
         end
