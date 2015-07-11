@@ -14,7 +14,7 @@ module MemoryProfiler
       @top          = opts[:top] || 50
       @trace        = opts[:trace]
       @ignore_files = opts[:ignore_files]
-      @allow_files = Array(opts[:allow_files])
+      @allow_files  = opts[:allow_files] && /#{Array(opts[:allow_files]).join('|')}/
     end
 
     # Helper for generating new reporter and running against block
@@ -64,15 +64,6 @@ module MemoryProfiler
       results
     end
 
-    def ignore_file?(file)
-      @ignore_files && @ignore_files =~ file
-    end
-
-    def allow_file?(file)
-      return true if @allow_files.empty?
-      !/#{@allow_files.join('|')}/.match(file).to_s.empty?
-    end
-
     # Iterates through objects in memory of a given generation.
     # Stores results along with meta data of objects collected.
     def object_list(generation)
@@ -96,7 +87,8 @@ module MemoryProfiler
 
       objs.map! do |obj|
         file = ObjectSpace.allocation_sourcefile(obj) || "(no name)".freeze
-        next if !allow_file?(file) || ignore_file?(file)
+        next if @ignore_files && @ignore_files =~ file
+        next if @allow_files && !@allow_files =~ file
 
         line       = ObjectSpace.allocation_sourceline(obj)
         location   = helper.lookup_location(file, line)
