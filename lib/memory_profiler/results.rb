@@ -42,9 +42,9 @@ module MemoryProfiler
       self.strings_allocated = string_report(allocated, top)
       self.strings_retained = string_report(retained, top)
 
-      self.total_allocated = allocated.count
+      self.total_allocated = allocated.size
       self.total_allocated_memsize = allocated.values.map!(&:memsize).inject(0, :+)
-      self.total_retained = retained.count
+      self.total_retained = retained.size
       self.total_retained_memsize = retained.values.map!(&:memsize).inject(0, :+)
 
       self
@@ -52,13 +52,13 @@ module MemoryProfiler
 
     def string_report(data, top)
       data.values
-          .keep_if { |stat| stat.class_name == 'String'.freeze }
+          .keep_if { |stat| stat.string_value }
           .map! { |stat| [stat.string_value, stat.location] }
           .group_by { |string, _location| string }
-          .sort_by {|_string, list| -list.count }
+          .sort_by {|_string, list| -list.size }
           .first(top)
           .map { |string, list| [string, list.group_by { |_string, location| location }
-                                             .map { |location, locations| [location, locations.count] }
+                                             .map { |location, locations| [location, locations.size] }
                                 ]
           }
     end
