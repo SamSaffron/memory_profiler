@@ -27,12 +27,12 @@ module MemoryProfiler
 
       @@lookups.each do |name, stat_attribute|
 
-        memsize_results, count_results = allocated.max_n(top, stat_attribute)
+        memsize_results, count_results = allocated.top_n(top, stat_attribute)
 
         self.send("allocated_memory_by_#{name}=", memsize_results)
         self.send("allocated_objects_by_#{name}=", count_results)
 
-        memsize_results, count_results = retained.max_n(top, stat_attribute)
+        memsize_results, count_results = retained.top_n(top, stat_attribute)
 
         self.send("retained_memory_by_#{name}=", memsize_results)
         self.send("retained_objects_by_#{name}=", count_results)
