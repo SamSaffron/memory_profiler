@@ -4,6 +4,7 @@ module MemoryProfiler
     def initialize
       @gem_guess_cache = Hash.new
       @location_cache = Hash.new({})
+      @class_name_cache = Hash.new.compare_by_identity
     end
 
     def guess_gem(path)
@@ -21,6 +22,10 @@ module MemoryProfiler
 
     def lookup_location(file, line)
       @location_cache[file][line] ||= "#{file}:#{line}"
+    end
+
+    def lookup_class_name(klass)
+      @class_name_cache[klass] ||= klass.name
     end
 
   end

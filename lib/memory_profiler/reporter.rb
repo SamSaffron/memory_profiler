@@ -93,7 +93,7 @@ module MemoryProfiler
         line       = ObjectSpace.allocation_sourceline(obj)
         location   = helper.lookup_location(file, line)
         klass      = obj.class
-        class_name = klass.name
+        class_name = helper.lookup_class_name(klass)
         gem        = helper.guess_gem(file)
         string     = obj.dup if klass == String
 
