@@ -38,7 +38,7 @@ module MemoryProfiler
         block.call
       end
       allocated = object_list(generation)
-      retained = StatHash.new
+      retained = StatHash.new.compare_by_identity
 
       GC.enable
       GC.start
@@ -85,7 +85,9 @@ module MemoryProfiler
       rvalue_size_adjustment = RUBY_VERSION < '2.2' ? rvalue_size : 0
       helper = Helpers.new
 
-      objs.map! do |obj|
+      result = StatHash.new.compare_by_identity
+
+      objs.each do |obj|
         file = ObjectSpace.allocation_sourcefile(obj) || "(no name)".freeze
         next if @ignore_files && @ignore_files =~ file
         next if @allow_files && !@allow_files =~ file
@@ -103,14 +105,16 @@ module MemoryProfiler
           memsize = ObjectSpace.memsize_of(obj) + rvalue_size_adjustment
           # compensate for API bug
           memsize = rvalue_size if memsize > 100_000_000_000
-          [object_id, MemoryProfiler::Stat.new(class_name, gem, file, location, memsize, string)]
+          result[object_id] = MemoryProfiler::Stat.new(class_name, gem, file, location, memsize, string)
         rescue
           # __id__ is not defined, give up
         end
       end
-      objs.compact!
 
-      StatHash[objs]
+      # Although `objs` will go out of scope, clear the array so objects can definitely be GCd
+      objs.clear
+
+      result
     end
   end
 end
