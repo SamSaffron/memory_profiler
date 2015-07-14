@@ -61,6 +61,7 @@ module MemoryProfiler
                                              .map { |location, locations| [location, locations.size] }
                                 ]
           }
+          .sort_by! {|string, list| [-list.size, string] }
     end
 
     def pretty_print(io = STDOUT, **options)
@@ -96,7 +97,7 @@ module MemoryProfiler
       io.puts @colorize.line("-----------------------------------")
       strings.each do |string, stats|
         io.puts "#{stats.reduce(0) { |a, b| a + b[1] }.to_s.rjust(10)}  #{@colorize.string((string[0..200].inspect))}"
-        stats.sort_by { |x, y| -y }.each do |location, count|
+        stats.sort_by { |x, y| [-y, x] }.each do |location, count|
           io.puts "#{@colorize.path(count.to_s.rjust(10))}  #{location}"
         end
         io.puts
