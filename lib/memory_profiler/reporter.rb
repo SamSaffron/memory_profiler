@@ -97,7 +97,7 @@ module MemoryProfiler
         klass      = obj.class
         class_name = helper.lookup_class_name(klass)
         gem        = helper.guess_gem(file)
-        string     = obj.dup if klass == String
+        string     = '' << obj  if klass == String
 
         begin
           object_id = obj.__id__
