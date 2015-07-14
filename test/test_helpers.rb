@@ -4,7 +4,8 @@ module MemoryProfiler
 
   class TestHelpers < Minitest::Test
     def assert_gem_parse(expected, path)
-      assert_equal(expected, Helpers.guess_gem(path))
+      helper = Helpers.new
+      assert_equal(expected, helper.guess_gem(path))
     end
 
     def test_rubygems_parse

@@ -14,7 +14,7 @@ module MemoryProfiler
       @top          = opts[:top] || 50
       @trace        = opts[:trace]
       @ignore_files = opts[:ignore_files]
-      @allow_files = Array(opts[:allow_files])
+      @allow_files  = opts[:allow_files] && /#{Array(opts[:allow_files]).join('|')}/
     end
 
     # Helper for generating new reporter and running against block
@@ -30,27 +30,24 @@ module MemoryProfiler
     # @return [MemoryProfiler::Results]
     def run(&block)
 
-      allocated, rvalue_size = nil
-
-      rvalue_size = GC::INTERNAL_CONSTANTS[:RVALUE_SIZE]
-      Helpers.full_gc
+      GC.start
       GC.disable
 
+      generation = GC.count
       ObjectSpace.trace_object_allocations do
-        generation = GC.count
         block.call
-        allocated = object_list(generation, rvalue_size)
       end
-
-      results = Results.new
-      results.strings_allocated = results.string_report(allocated, top)
+      allocated = object_list(generation)
+      retained = StatHash.new.compare_by_identity
 
       GC.enable
+      GC.start
 
-      Helpers.full_gc
+      # Caution: Do not allocate any new Objects between the call to GC.start and the completion of the retained
+      #          lookups. It is likely that a new Object would reuse an object_id from a GC'd object.
 
-      retained = StatHash.new
       ObjectSpace.each_object do |obj|
+        next unless ObjectSpace.allocation_generation(obj) == generation
         begin
           found = allocated[obj.__id__]
           retained[obj.__id__] = found if found
@@ -60,36 +57,23 @@ module MemoryProfiler
           # but it is quite rare
         end
       end
+      ObjectSpace.trace_object_allocations_clear
 
+      results = Results.new
       results.register_results(allocated, retained, top)
       results
     end
 
-    def trace_all?
-      !trace
-    end
-
-    def ignore_file?(file)
-      return true if file == __FILE__
-      @ignore_files && @ignore_files =~ file
-    end
-
-    def allow_file?(file)
-      return true if @allow_files.empty?
-      !/#{@allow_files.join('|')}/.match(file).to_s.empty?
-    end
-
     # Iterates through objects in memory of a given generation.
     # Stores results along with meta data of objects collected.
-    def object_list(generation, rvalue_size)
+    def object_list(generation)
 
-      results = StatHash.new
       objs = []
 
       ObjectSpace.each_object do |obj|
-        next unless generation == ObjectSpace.allocation_generation(obj)
+        next unless ObjectSpace.allocation_generation(obj) == generation
         begin
-          if trace_all? || trace.include?(obj.class)
+          if !trace || trace.include?(obj.class)
             objs << obj
           end
         rescue
@@ -97,29 +81,40 @@ module MemoryProfiler
         end
       end
 
+      rvalue_size = GC::INTERNAL_CONSTANTS[:RVALUE_SIZE]
+      rvalue_size_adjustment = RUBY_VERSION < '2.2' ? rvalue_size : 0
+      helper = Helpers.new
+
+      result = StatHash.new.compare_by_identity
+
       objs.each do |obj|
-        file = ObjectSpace.allocation_sourcefile(obj)
-        next if !allow_file?(file) || ignore_file?(file)
+        file = ObjectSpace.allocation_sourcefile(obj) || "(no name)".freeze
+        next if @ignore_files && @ignore_files =~ file
+        next if @allow_files && !@allow_files =~ file
 
         line       = ObjectSpace.allocation_sourceline(obj)
-        class_path = ObjectSpace.allocation_class_path(obj)
-        method_id  = ObjectSpace.allocation_method_id(obj)
+        location   = helper.lookup_location(file, line)
+        klass      = obj.class
+        class_name = helper.lookup_class_name(klass)
+        gem        = helper.guess_gem(file)
+        string     = obj.dup if klass == String
 
-        class_name = obj.class.name rescue "BasicObject"
         begin
           object_id = obj.__id__
 
-          memsize = ObjectSpace.memsize_of(obj)
-          memsize += rvalue_size if RUBY_VERSION < '2.2'.freeze
+          memsize = ObjectSpace.memsize_of(obj) + rvalue_size_adjustment
           # compensate for API bug
           memsize = rvalue_size if memsize > 100_000_000_000
-          results[object_id] = Stat.new(class_name, file, line, class_path, method_id, memsize)
+          result[object_id] = MemoryProfiler::Stat.new(class_name, gem, file, location, memsize, string)
         rescue
           # __id__ is not defined, give up
         end
       end
 
-      results
+      # Although `objs` will go out of scope, clear the array so objects can definitely be GCd
+      objs.clear
+
+      result
     end
   end
 end

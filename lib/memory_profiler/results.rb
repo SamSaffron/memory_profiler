@@ -1,40 +1,19 @@
 module MemoryProfiler
   class Results
 
-    def self.register_type(name, lookup)
+    def self.register_type(name, stat_attribute)
+      @@lookups ||= []
+      @@lookups << [name, stat_attribute]
+
       ["allocated", "retained"].product(["objects", "memory"]).each do |type, metric|
-        full_name = "#{type}_#{metric}_by_#{name}"
-        attr_accessor full_name
-
-        @@lookups ||= []
-        mapped = lookup
-
-        if metric == "memory"
-          mapped = lambda { |stat|
-            [lookup.call(stat), stat.memsize]
-          }
-        end
-
-        @@lookups << [full_name, mapped]
-
+        attr_accessor "#{type}_#{metric}_by_#{name}"
       end
     end
 
-    register_type :gem, lambda { |stat|
-                        Helpers.guess_gem("#{stat.file}")
-                      }
-
-    register_type :file, lambda { |stat|
-                         stat.file || "(no name)"
-                       }
-
-    register_type :location, lambda { |stat|
-                             "#{stat.file}:#{stat.line}"
-                           }
-
-    register_type :class, lambda { |stat|
-                             "#{stat.class_name}"
-                           }
+    register_type 'gem', :gem
+    register_type 'file', :file
+    register_type 'location', :location
+    register_type 'class', :class_name
 
     attr_accessor :strings_retained, :strings_allocated
     attr_accessor :total_retained, :total_allocated
@@ -45,42 +24,43 @@ module MemoryProfiler
     end
 
     def register_results(allocated, retained, top)
-      @@lookups.each do |name, lookup|
-        mapped = lambda { |tuple|
-          lookup.call(tuple[1])
-        }
 
-        result =
-            if name =~ /^allocated/
-              allocated.top_n(top, &mapped)
-            else
-              retained.top_n(top, &mapped)
-            end
+      @@lookups.each do |name, stat_attribute|
 
-        self.send "#{name}=", result
+        memsize_results, count_results = allocated.top_n(top, stat_attribute)
+
+        self.send("allocated_memory_by_#{name}=", memsize_results)
+        self.send("allocated_objects_by_#{name}=", count_results)
+
+        memsize_results, count_results = retained.top_n(top, stat_attribute)
+
+        self.send("retained_memory_by_#{name}=", memsize_results)
+        self.send("retained_objects_by_#{name}=", count_results)
       end
 
+
+      self.strings_allocated = string_report(allocated, top)
       self.strings_retained = string_report(retained, top)
 
-      self.total_allocated = allocated.count
-      self.total_allocated_memsize = allocated.values.map(&:memsize).inject(:+) || 0
-      self.total_retained = retained.count
-      self.total_retained_memsize = retained.values.map(&:memsize).inject(:+) || 0
+      self.total_allocated = allocated.size
+      self.total_allocated_memsize = allocated.values.map!(&:memsize).inject(0, :+)
+      self.total_retained = retained.size
+      self.total_retained_memsize = retained.values.map!(&:memsize).inject(0, :+)
 
       self
     end
 
-    StringStat = Struct.new(:string, :count, :location)
-
     def string_report(data, top)
-      data
-          .reject { |id, stat| stat.class_name != "String" }
-          .map { |id, stat| [begin; ObjectSpace._id2ref(id); rescue; "__UNKNOWN__"; end, "#{stat.file}:#{stat.line}"] }
-          .group_by { |string, location| string }
-          .sort_by { |string, list| -list.count }
+      data.values
+          .keep_if { |stat| stat.string_value }
+          .map! { |stat| [stat.string_value, stat.location] }
+          .group_by { |string, _location| string }
+          .sort_by {|_string, list| -list.size }
           .first(top)
-          .map { |string, list| [string, list.group_by { |str, location| location }
-          .map { |location, locations| [location, locations.count] }] }
+          .map { |string, list| [string, list.group_by { |_string, location| location }
+                                             .map { |location, locations| [location, locations.size] }
+                                ]
+          }
     end
 
     def pretty_print(io = STDOUT, **options)
