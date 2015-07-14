@@ -27,7 +27,7 @@ class TestTopN < Minitest::Test
     metric1_results = data.top_n(2, :metric1)
     metric2_results = data.top_n(2, :metric2)
 
-    assert_equal([[{:data=>"class3", :count=>1000}, {:data=>"class2", :count=>300}],
+    assert_equal([[{:data=>"class3", :count=>1000}, {:data=>"class1", :count=>300}],
                   [{:data=>"class1", :count=>3}, {:data=>"class2", :count=>3}]],
                  metric1_results)
 
@@ -41,7 +41,7 @@ class TestTopN < Minitest::Test
     metric1_results = data.top_n(50, :metric1)
     metric2_results = data.top_n(50, :metric2)
 
-    assert_equal([[{:data=>"class3", :count=>1000}, {:data=>"class2", :count=>300}, {:data=>"class1", :count=>300}],
+    assert_equal([[{:data=>"class3", :count=>1000}, {:data=>"class1", :count=>300}, {:data=>"class2", :count=>300}],
                   [{:data=>"class1", :count=>3}, {:data=>"class2", :count=>3}, {:data=>"class3", :count=>1}]],
                  metric1_results)
 

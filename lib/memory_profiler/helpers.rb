@@ -3,7 +3,7 @@ module MemoryProfiler
 
     def initialize
       @gem_guess_cache = Hash.new
-      @location_cache = Hash.new({}.compare_by_identity)
+      @location_cache = Hash.new { |h,k| h[k] = Hash.new.compare_by_identity }
       @class_name_cache = Hash.new.compare_by_identity
     end
 
@@ -25,7 +25,7 @@ module MemoryProfiler
     end
 
     def lookup_class_name(klass)
-      @class_name_cache[klass] ||= klass.name
+      @class_name_cache[klass] ||= klass.name || '<<Unknown>>'
     end
 
   end
