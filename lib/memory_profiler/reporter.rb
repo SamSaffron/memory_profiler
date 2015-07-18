@@ -90,7 +90,7 @@ module MemoryProfiler
       objs.each do |obj|
         file = ObjectSpace.allocation_sourcefile(obj) || "(no name)".freeze
         next if @ignore_files && @ignore_files =~ file
-        next if @allow_files && !@allow_files =~ file
+        next if @allow_files && !(@allow_files =~ file)
 
         line       = ObjectSpace.allocation_sourceline(obj)
         location   = helper.lookup_location(file, line)

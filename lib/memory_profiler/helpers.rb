@@ -9,9 +9,9 @@ module MemoryProfiler
 
     def guess_gem(path)
       @gem_guess_cache[path] ||=
-        if /(\/gems\/.*)*\/gems\/(?<gem>[^\/]+)/ =~ path
-          gem
-        elsif /\/rubygems\// =~ path
+        if /(\/gems\/.*)*\/gems\/(?<gemname>[^\/]+)/ =~ path
+          gemname
+        elsif /\/rubygems[\.\/]/ =~ path
           "rubygems".freeze
         elsif /(?<app>[^\/]+\/(bin|app|lib))/ =~ path
           app
