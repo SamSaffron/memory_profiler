@@ -1,9 +1,8 @@
 require 'objspace'
 module MemoryProfiler
-  # Reporter is the top level api used for generating memory reports
+  # Reporter is the top level API used for generating memory reports.
   #
   # @example Measure object allocation in a block
-  #
   #   report = Reporter.report(top: 50) do
   #     5.times { "foo" }
   #   end
@@ -17,17 +16,18 @@ module MemoryProfiler
       @allow_files  = opts[:allow_files] && /#{Array(opts[:allow_files]).join('|')}/
     end
 
-    # Helper for generating new reporter and running against block
+    # Helper for generating new reporter and running against block.
+    # @param [Hash] opts the options to create a report with
+    # @option opts [Fixnum] :top max number of entries to output
+    # @option opts [Array <Class>] :trace an array of classes you explicitly want to trace
+    # @option opts [Regexp] :ignore_files a regular expression used to exclude certain files from tracing
+    # @option opts [Array <String>] :allow_files a string or array of strings to selectively include in tracing
+    # @return [MemoryProfiler::Results]
     def self.report(opts={}, &block)
       self.new(opts).run(&block)
     end
 
     # Collects object allocation and memory of ruby code inside of passed block.
-    #
-    # @param [Hash] opts the options to create a message with.
-    # @option opts [Fixnum] :top max number of entries to output in report
-    # @option opts [Array <Class>] :trace an array of classes you explicitly want to trace
-    # @return [MemoryProfiler::Results]
     def run(&block)
 
       GC.start
@@ -53,7 +53,7 @@ module MemoryProfiler
           retained[obj.__id__] = found if found
         rescue
           # __id__ is not defined on BasicObject, skip it
-          # we can probably trasplant the object_id at this point,
+          # we can probably transplant the object_id at this point,
           # but it is quite rare
         end
       end
@@ -63,6 +63,8 @@ module MemoryProfiler
       results.register_results(allocated, retained, top)
       results
     end
+
+    private
 
     # Iterates through objects in memory of a given generation.
     # Stores results along with meta data of objects collected.

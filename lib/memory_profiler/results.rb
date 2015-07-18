@@ -19,10 +19,6 @@ module MemoryProfiler
     attr_accessor :total_retained, :total_allocated
     attr_accessor :total_retained_memsize, :total_allocated_memsize
 
-    def self.from_raw(allocated, retained, top)
-      self.new.register_results(allocated, retained, top)
-    end
-
     def register_results(allocated, retained, top)
 
       @@lookups.each do |name, stat_attribute|
@@ -64,7 +60,11 @@ module MemoryProfiler
           .sort_by! {|string, list| [-list.size, string] }
     end
 
-    def pretty_print(io = STDOUT, **options)
+    # Output the results of the report
+    # @param [Hash] options the options for output
+    # @option opts [String] :to_file a path to your log file
+    # @option opts [Boolean] :color_output a flag for whether to colorize output
+    def pretty_print(io = STDOUT, options = {})
       io = File.open(options[:to_file], "w") if options[:to_file]
 
       color_output = options.fetch(:color_output) { io.respond_to?(:isatty) && io.isatty }
