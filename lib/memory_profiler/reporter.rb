@@ -11,17 +11,17 @@ module MemoryProfiler
 
     def initialize(opts = {})
       @top          = opts[:top] || 50
-      @trace        = opts[:trace]
-      @ignore_files = opts[:ignore_files]
+      @trace        = opts[:trace] && Array(opts[:trace])
+      @ignore_files = opts[:ignore_files] && Regexp.new(opts[:ignore_files])
       @allow_files  = opts[:allow_files] && /#{Array(opts[:allow_files]).join('|')}/
     end
 
     # Helper for generating new reporter and running against block.
     # @param [Hash] opts the options to create a report with
-    # @option opts [Fixnum] :top max number of entries to output
-    # @option opts [Array <Class>] :trace an array of classes you explicitly want to trace
-    # @option opts [Regexp] :ignore_files a regular expression used to exclude certain files from tracing
-    # @option opts [Array <String>] :allow_files a string or array of strings to selectively include in tracing
+    # @option opts :top max number of entries to output
+    # @option opts :trace a class or an array of classes you explicitly want to trace
+    # @option opts :ignore_files a regular expression used to exclude certain files from tracing
+    # @option opts :allow_files a string or array of strings to selectively include in tracing
     # @return [MemoryProfiler::Results]
     def self.report(opts={}, &block)
       self.new(opts).run(&block)
