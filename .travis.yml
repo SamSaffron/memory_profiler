@@ -1,4 +1,6 @@
 language: ruby
 rvm:
-  - 2.1.0
-script: 'bundle exec rake test'
+  - 2.1
+  - 2.2.2
+cache: bundler
+sudo: false
