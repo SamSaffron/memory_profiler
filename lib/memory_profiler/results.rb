@@ -108,7 +108,7 @@ module MemoryProfiler
     def dump(description, data, io)
       io.puts description
       io.puts @colorize.line("-----------------------------------")
-      if data
+      if data && !data.empty?
         data.each do |item|
           io.puts "#{item[:count].to_s.rjust(10)}  #{item[:data]}"
         end
