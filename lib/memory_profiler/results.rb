@@ -51,13 +51,12 @@ module MemoryProfiler
           .keep_if { |stat| stat.string_value }
           .map! { |stat| [stat.string_value, stat.location] }
           .group_by { |string, _location| string }
-          .sort_by {|_string, list| -list.size }
+          .sort_by {|string, list| [-list.size, string] }
           .first(top)
           .map { |string, list| [string, list.group_by { |_string, location| location }
                                              .map { |location, locations| [location, locations.size] }
                                 ]
           }
-          .sort_by! {|string, list| [-list.size, string] }
     end
 
     # Output the results of the report
