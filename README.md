@@ -35,7 +35,14 @@ report.pretty_print
 
 ## Options
 
-You can use `allow_files` option for displaying only lines which contain string or array with strings:
+The report method can take a few options:
+
+* `top`: maximum number of entries to display in a report (default is 50)
+* `allow_files`: include only certain files from tracing - can be given as a String, Regexp, or array of Strings
+* `ignore_files`: exclude certain files from tracing - can be given as a String or Regexp
+* `trace`: an array of classes for which you explicitly want to trace object allocations
+
+Check out `Reporter#new` for more details.
 
 ```
 pry> require 'memory_profiler'
@@ -76,14 +83,6 @@ rubygems x 305879
 
 . . .
 ```
-
-Other options include:
-
-* `top`: maximum number of entries to display in a report
-* `trace`: an array of classes for which you explicitly want to trace object allocations
-* `ignore_files`: a regular expression used to exclude certain files from tracing (opposite of `allow_files`)
-
-Check out `Reporter#new` for more details.
 
 ## Example Session
 
@@ -366,6 +365,9 @@ Memory profiler also performs some String analysis to help you find strings that
 
 ## Changelog
 
+### 0.9.5
+- Improved stability and performance @dgynn
+
 ### 0.9.4
 - FIX: remove incorrect RVALUE offset on 2.2  @dgynn
 - FEATURE: add total memory usage @dgynn
@@ -379,7 +381,6 @@ Memory profiler also performs some String analysis to help you find strings that
 ### 0.9.0
 - This is quite stable, upping version to reflect
 - Fixed bug where it would crash when location was nil for some reason
-
 
 ### 0.0.4
 - Added compatibility with released version of Ruby 2.1.0

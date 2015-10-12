@@ -8,14 +8,12 @@ Gem::Specification.new do |spec|
   spec.version       = MemoryProfiler::VERSION
   spec.authors       = ["Sam Saffron"]
   spec.email         = ["sam.saffron@gmail.com"]
-  spec.description   = %q{Memory profiling routines for Ruby Head}
-  spec.summary       = %q{Memory profiling routines for Ruby Head}
+  spec.description   = %q{Memory profiling routines for Ruby 2.1+}
+  spec.summary       = %q{Memory profiling routines for Ruby 2.1+}
   spec.homepage      = "https://github.com/SamSaffron/memory_profiler"
   spec.license       = "MIT"
 
-  spec.files         = `git ls-files`.split($/)
-  spec.test_files    = spec.files.grep(%r{^(test|spec|features)/})
-  spec.require_paths = ["lib"]
+  spec.files         = Dir["README.md", "LICENSE.txt", "lib/**/*"]
 
   spec.required_ruby_version = ">= 2.1.0"
 
