@@ -24,6 +24,17 @@ class TestReporter < Minitest::Test
     results
   end
 
+  def test_basic_object
+    retained = []
+    results = MemoryProfiler::Reporter.report do
+      retained << BasicObject.new
+    end
+    assert_equal(1, results.total_allocated)
+    assert_equal(1, results.total_retained)
+    assert_equal('<<Unknown>>', results.allocated_objects_by_class[0][:data])
+    assert_equal(1, results.retained_objects_by_location.length)
+  end
+
   def test_counts
     results = create_report
     assert_equal(16, results.total_allocated)

@@ -96,7 +96,7 @@ module MemoryProfiler
 
         line       = ObjectSpace.allocation_sourceline(obj)
         location   = helper.lookup_location(file, line)
-        klass      = obj.class
+        klass      = obj.class rescue nil
         class_name = helper.lookup_class_name(klass)
         gem        = helper.guess_gem(file)
         string     = '' << obj  if klass == String
