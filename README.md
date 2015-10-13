@@ -365,6 +365,10 @@ Memory profiler also performs some String analysis to help you find strings that
 
 ## Changelog
 
+### 0.9.6
+- FIX: pretty_print was failing under some conditions @vincentwoo
+- FIX: if #class is somehow nil don't crash @vincentwoo
+
 ### 0.9.5
 - Improved stability and performance @dgynn
 
