@@ -3,6 +3,12 @@ require_relative 'test_helper'
 class TestReporter < Minitest::Test
 
   class Foo; end
+  class NilReportingClass
+    def class
+      # return nil when asked for the class
+      nil
+    end
+  end
 
   # Shared method that creates a Results with 1 retained object using options provided
   def create_report(options={})
@@ -28,6 +34,17 @@ class TestReporter < Minitest::Test
     retained = []
     results = MemoryProfiler::Reporter.report do
       retained << BasicObject.new
+    end
+    assert_equal(1, results.total_allocated)
+    assert_equal(1, results.total_retained)
+    assert_equal('<<Unknown>>', results.allocated_objects_by_class[0][:data])
+    assert_equal(1, results.retained_objects_by_location.length)
+  end
+
+  def test_nil_reporting_class
+    retained = []
+    results = MemoryProfiler::Reporter.report do
+      retained << NilReportingClass.new
     end
     assert_equal(1, results.total_allocated)
     assert_equal(1, results.total_retained)
