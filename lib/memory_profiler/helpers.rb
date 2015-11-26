@@ -25,7 +25,7 @@ module MemoryProfiler
     end
 
     def lookup_class_name(klass)
-      @class_name_cache[klass] ||= (klass && klass.respond_to?(:name) && klass.name) || '<<Unknown>>'
+      @class_name_cache[klass] ||= (klass.is_a?(Class) && klass.name) || '<<Unknown>>'
     end
 
   end

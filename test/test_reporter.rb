@@ -9,6 +9,12 @@ class TestReporter < Minitest::Test
       nil
     end
   end
+  class StringReportingClass
+    def class
+      # return a string when asked for the class
+      'StringReportingClass'
+    end
+  end
 
   # Shared method that creates a Results with 1 retained object using options provided
   def create_report(options={})
@@ -45,6 +51,17 @@ class TestReporter < Minitest::Test
     retained = []
     results = MemoryProfiler::Reporter.report do
       retained << NilReportingClass.new
+    end
+    assert_equal(1, results.total_allocated)
+    assert_equal(1, results.total_retained)
+    assert_equal('<<Unknown>>', results.allocated_objects_by_class[0][:data])
+    assert_equal(1, results.retained_objects_by_location.length)
+  end
+
+  def test_string_reporting_class
+    retained = []
+    results = MemoryProfiler::Reporter.report do
+      retained << StringReportingClass.new
     end
     assert_equal(1, results.total_allocated)
     assert_equal(1, results.total_retained)
