@@ -88,10 +88,6 @@ module MemoryProfiler
       "\033[7m#{str}\033[27m"
     end
 
-    def no_colors
-      self.gsub /\033\[\d+m/, "";
-    end
-
   end
 
 end
