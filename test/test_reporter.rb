@@ -15,6 +15,11 @@ class TestReporter < Minitest::Test
       'StringReportingClass'
     end
   end
+  class NonStringNamedClass
+    def self.name
+      :Symbol
+    end
+  end
 
   # Shared method that creates a Results with 1 retained object using options provided
   def create_report(options={})
@@ -156,6 +161,16 @@ class TestReporter < Minitest::Test
     io = StringIO.new
     results.pretty_print io, color_output: false
     assert(!io.string.include?("\033"), 'excludes color information')
+  end
+
+  def test_non_string_named_class
+    report = MemoryProfiler.report do
+      NonStringNamedClass.new
+      "test"
+    end
+
+    io = StringIO.new
+    report.pretty_print io
   end
 
 end
