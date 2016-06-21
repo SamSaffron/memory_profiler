@@ -94,14 +94,15 @@ module MemoryProfiler
         next if @ignore_files && @ignore_files =~ file
         next if @allow_files && !(@allow_files =~ file)
 
-        line       = ObjectSpace.allocation_sourceline(obj)
-        location   = helper.lookup_location(file, line)
-        klass      = obj.class rescue nil
-        class_name = helper.lookup_class_name(klass)
-        gem        = helper.guess_gem(file)
-        string     = '' << obj  if klass == String
-
         begin
+          line       = ObjectSpace.allocation_sourceline(obj)
+          location   = helper.lookup_location(file, line)
+          klass      = obj.class rescue nil
+          class_name = helper.lookup_class_name(klass)
+          gem        = helper.guess_gem(file)
+
+          string     = '' << obj  if klass == String
+
           object_id = obj.__id__
 
           memsize = ObjectSpace.memsize_of(obj) + rvalue_size_adjustment
@@ -109,7 +110,7 @@ module MemoryProfiler
           memsize = rvalue_size if memsize > 100_000_000_000
           result[object_id] = MemoryProfiler::Stat.new(class_name, gem, file, location, memsize, string)
         rescue
-          # __id__ is not defined, give up
+          # give up if any any error occurs inspecting the object
         end
       end
 
