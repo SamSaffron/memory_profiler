@@ -105,6 +105,20 @@ class TestReporter < Minitest::Test
     assert_equal(1, results.retained_objects_by_location.length)
   end
 
+  def test_counts_with_start_stop
+    retained = []
+    prof_block = report_block(retained)
+    reporter = MemoryProfiler::Reporter.new
+    reporter.start
+    prof_block.call
+    reporter.stop
+    results = reporter.report_results
+
+    assert_equal(16, results.total_allocated)
+    assert_equal(1, results.total_retained)
+    assert_equal(1, results.retained_objects_by_location.length)
+  end
+
   def test_class_tracing_with_array
     results = create_report(:trace => [Foo])
     assert_equal(1, results.total_allocated)
