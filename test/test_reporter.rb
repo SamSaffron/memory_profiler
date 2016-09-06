@@ -23,10 +23,10 @@ class TestReporter < Minitest::Test
     end
   end
 
-  # Shared method that creates a Results with 1 retained object using options provided
-  def create_report(options={})
-    retained = []
-    results = MemoryProfiler::Reporter.report(options) do
+  # Reusable block for reporting.  Pass in an `Array` to retain objects after
+  # allocation.
+  def report_block(retained=[])
+    lambda do
       # Create an object from a gem outside memory_profiler which allocates
       # its own objects internally
       minitest_report = MiniTest::Reporter.new
@@ -40,6 +40,12 @@ class TestReporter < Minitest::Test
       # Create one object defined by this file
       Foo.new
     end
+  end
+
+  # Shared method that creates a Results with 1 retained object using options provided
+  def create_report(options={})
+    retained = []
+    results = MemoryProfiler::Reporter.report options, &report_block(retained)
     results
   end
 
