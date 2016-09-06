@@ -49,6 +49,16 @@ class TestReporter < Minitest::Test
     results
   end
 
+  def create_start_stop_report(options={})
+    retained = []
+    prof_block = report_block(retained)
+    reporter = MemoryProfiler::Reporter.new(options)
+    reporter.start
+    prof_block.call
+    reporter.stop
+    reporter.report_results
+  end
+
   def test_basic_object
     retained = []
     results = MemoryProfiler::Reporter.report do
@@ -106,14 +116,7 @@ class TestReporter < Minitest::Test
   end
 
   def test_counts_with_start_stop
-    retained = []
-    prof_block = report_block(retained)
-    reporter = MemoryProfiler::Reporter.new
-    reporter.start
-    prof_block.call
-    reporter.stop
-    results = reporter.report_results
-
+    results = create_start_stop_report
     assert_equal(16, results.total_allocated)
     assert_equal(1, results.total_retained)
     assert_equal(1, results.retained_objects_by_location.length)
