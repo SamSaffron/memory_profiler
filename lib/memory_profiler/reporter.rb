@@ -7,7 +7,7 @@ module MemoryProfiler
   #     5.times { "foo" }
   #   end
   class Reporter
-    attr_reader :top, :trace
+    attr_reader :top, :trace, :generation
 
     def initialize(opts = {})
       @top          = opts[:top] || 50
@@ -33,7 +33,7 @@ module MemoryProfiler
       GC.start
       GC.disable
 
-      generation = GC.count
+      @generation = GC.count
       ObjectSpace.trace_object_allocations do
         block.call
       end
