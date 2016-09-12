@@ -3,6 +3,7 @@ require_relative 'test_helper'
 class TestReporter < Minitest::Test
 
   class Foo; end
+  class BasicObjectSubclass < BasicObject ; end
   class NilReportingClass
     def class
       # return nil when asked for the class
@@ -16,6 +17,7 @@ class TestReporter < Minitest::Test
     end
   end
   class NonStringNamedClass
+    # return a symbol when the class is asked for the name
     def self.name
       :Symbol
     end
@@ -45,11 +47,27 @@ class TestReporter < Minitest::Test
     retained = []
     results = MemoryProfiler::Reporter.report do
       retained << BasicObject.new
+      retained << BasicObjectSubclass.new
     end
-    assert_equal(1, results.total_allocated)
-    assert_equal(1, results.total_retained)
+    assert_equal(2, results.total_allocated)
+    assert_equal(2, results.total_retained)
+    assert_equal('BasicObject', results.allocated_objects_by_class[0][:data])
+    assert_equal('TestReporter::BasicObjectSubclass', results.allocated_objects_by_class[1][:data])
+    assert_equal(2, results.retained_objects_by_location.length)
+  end
+
+  def test_anonymous_class_object
+    retained = []
+    anon_class1 = Class.new
+    anon_class2 = Class.new(String)
+    results = MemoryProfiler::Reporter.report do
+      retained << anon_class1.new
+      retained << anon_class2.new
+    end
+    assert_equal(2, results.total_allocated)
+    assert_equal(2, results.total_retained)
     assert_equal('<<Unknown>>', results.allocated_objects_by_class[0][:data])
-    assert_equal(1, results.retained_objects_by_location.length)
+    assert_equal(2, results.retained_objects_by_location.length)
   end
 
   def test_nil_reporting_class
@@ -59,7 +77,7 @@ class TestReporter < Minitest::Test
     end
     assert_equal(1, results.total_allocated)
     assert_equal(1, results.total_retained)
-    assert_equal('<<Unknown>>', results.allocated_objects_by_class[0][:data])
+    assert_equal('TestReporter::NilReportingClass', results.allocated_objects_by_class[0][:data])
     assert_equal(1, results.retained_objects_by_location.length)
   end
 
@@ -70,7 +88,7 @@ class TestReporter < Minitest::Test
     end
     assert_equal(1, results.total_allocated)
     assert_equal(1, results.total_retained)
-    assert_equal('<<Unknown>>', results.allocated_objects_by_class[0][:data])
+    assert_equal('TestReporter::StringReportingClass', results.allocated_objects_by_class[0][:data])
     assert_equal(1, results.retained_objects_by_location.length)
   end
 
@@ -164,13 +182,20 @@ class TestReporter < Minitest::Test
   end
 
   def test_non_string_named_class
-    report = MemoryProfiler.report do
-      NonStringNamedClass.new
-      "test"
+    retained = []
+    results = MemoryProfiler::Reporter.report do
+      retained << NonStringNamedClass.new
+      retained << "test"
     end
 
     io = StringIO.new
-    report.pretty_print io
+    results.pretty_print io
+
+    assert_equal(2, results.total_allocated)
+    assert_equal(2, results.total_retained)
+    assert_equal('String', results.allocated_objects_by_class[0][:data])
+    assert_equal('Symbol', results.allocated_objects_by_class[1][:data])
+    assert_equal(2, results.retained_objects_by_location.length)
   end
 
 end

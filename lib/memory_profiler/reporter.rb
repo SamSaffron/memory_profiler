@@ -48,14 +48,8 @@ module MemoryProfiler
 
       ObjectSpace.each_object do |obj|
         next unless ObjectSpace.allocation_generation(obj) == generation
-        begin
-          found = allocated[obj.__id__]
-          retained[obj.__id__] = found if found
-        rescue
-          # __id__ is not defined on BasicObject, skip it
-          # we can probably transplant the object_id at this point,
-          # but it is quite rare
-        end
+        found = allocated[obj.__id__]
+        retained[obj.__id__] = found if found
       end
       ObjectSpace.trace_object_allocations_clear
 
@@ -70,52 +64,42 @@ module MemoryProfiler
     # Stores results along with meta data of objects collected.
     def object_list(generation)
 
-      objs = []
-
-      ObjectSpace.each_object do |obj|
-        next unless ObjectSpace.allocation_generation(obj) == generation
-        begin
-          if !trace || trace.include?(obj.class)
-            objs << obj
-          end
-        rescue
-          # may not respond to class so skip
-        end
-      end
-
       rvalue_size = GC::INTERNAL_CONSTANTS[:RVALUE_SIZE]
       rvalue_size_adjustment = RUBY_VERSION < '2.2' ? rvalue_size : 0
       helper = Helpers.new
 
       result = StatHash.new.compare_by_identity
 
-      objs.each do |obj|
+      ObjectSpace.each_object do |obj|
+        next unless ObjectSpace.allocation_generation(obj) == generation
+
         file = ObjectSpace.allocation_sourcefile(obj) || "(no name)".freeze
         next if @ignore_files && @ignore_files =~ file
         next if @allow_files && !(@allow_files =~ file)
 
+        klass = obj.class rescue nil
+        unless Class === klass
+          # attempt to determine the true Class when .class returns something other than a Class
+          klass = Kernel.instance_method(:class).bind(obj).call
+        end
+        next if @trace && !trace.include?(klass)
+
         begin
           line       = ObjectSpace.allocation_sourceline(obj)
           location   = helper.lookup_location(file, line)
-          klass      = obj.class rescue nil
           class_name = helper.lookup_class_name(klass)
           gem        = helper.guess_gem(file)
 
           string     = '' << obj  if klass == String
 
-          object_id = obj.__id__
-
           memsize = ObjectSpace.memsize_of(obj) + rvalue_size_adjustment
           # compensate for API bug
           memsize = rvalue_size if memsize > 100_000_000_000
-          result[object_id] = MemoryProfiler::Stat.new(class_name, gem, file, location, memsize, string)
+          result[obj.__id__] = MemoryProfiler::Stat.new(class_name, gem, file, location, memsize, string)
         rescue
           # give up if any any error occurs inspecting the object
         end
       end
-
-      # Although `objs` will go out of scope, clear the array so objects can definitely be GCd
-      objs.clear
 
       result
     end
