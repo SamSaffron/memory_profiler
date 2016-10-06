@@ -63,7 +63,11 @@ module MemoryProfiler
     # @param [Hash] options the options for output
     # @option opts [String] :to_file a path to your log file
     # @option opts [Boolean] :color_output a flag for whether to colorize output
-    def pretty_print(io = STDOUT, **options)
+    def pretty_print(io = $stdout, **options)
+      # Handle the special case that Ruby PrettyPrint expects `pretty_print`
+      # to be a customized pretty printing function for a class
+      return io.pp_object(self) if defined?(PP) && io.is_a?(PP)
+
       io = File.open(options[:to_file], "w") if options[:to_file]
 
       color_output = options.fetch(:color_output) { io.respond_to?(:isatty) && io.isatty }
