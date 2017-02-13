@@ -56,7 +56,6 @@ class TestReporter < Minitest::Test
     reporter.start
     prof_block.call
     reporter.stop
-    reporter.report_results
   end
 
   def test_basic_object

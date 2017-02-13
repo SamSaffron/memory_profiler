@@ -62,7 +62,6 @@ module MemoryProfiler
       start
       block.call
       stop
-      report_results
     end
 
     private
