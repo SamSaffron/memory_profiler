@@ -10,7 +10,6 @@ require "memory_profiler/reporter"
 
 module MemoryProfiler
   def self.report(opts={},&block)
-    opts[:top] ||= 50
     Reporter.report(opts,&block)
   end
 
