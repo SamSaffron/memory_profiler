@@ -33,6 +33,22 @@ end
 report.pretty_print
 ```
 
+Or, you can use the `.start`/`.stop` API as well:
+
+```ruby
+require 'memory_profiler'
+
+MemoryProfiler.start
+
+# run your code
+
+report = MemoryProfiler.stop
+report.pretty_print
+```
+
+**NOTE:**  `.start`/`.stop` can only be run once per report, and `.stop` will
+be the only time you can retrieve the report using this API.
+
 ## Options
 
 The report method can take a few options:
