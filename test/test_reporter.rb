@@ -58,6 +58,14 @@ class TestReporter < Minitest::Test
     reporter.stop
   end
 
+  def create_convenient_start_stop_report(options={})
+    retained = []
+    prof_block = report_block(retained)
+    MemoryProfiler.start(options)
+    prof_block.call
+    MemoryProfiler.stop
+  end
+
   def test_basic_object
     retained = []
     results = MemoryProfiler::Reporter.report do
@@ -121,6 +129,36 @@ class TestReporter < Minitest::Test
     assert_equal(1, results.retained_objects_by_location.length)
   end
 
+  def test_counts_with_start_stop_on_module
+    results = create_convenient_start_stop_report
+    assert_equal(16, results.total_allocated)
+    assert_equal(1, results.total_retained)
+    assert_equal(1, results.retained_objects_by_location.length)
+  end
+
+  def test_module_stop_with_no_start
+    results = MemoryProfiler.stop
+    assert_nil(results)
+  end
+
+  def test_module_double_start
+    MemoryProfiler.start
+    reporter = MemoryProfiler::Reporter.current_reporter
+
+    # From create_convenient_start_stop_report
+    retained = []
+    prof_block = report_block(retained)
+    MemoryProfiler.start
+    same_reporter = MemoryProfiler::Reporter.current_reporter
+    prof_block.call
+    results = MemoryProfiler.stop
+    # end
+
+    assert_equal(reporter, same_reporter)
+    # Some extra here do to variables needed in the test above
+    assert_equal(20, results.total_allocated)
+  end
+
   def test_class_tracing_with_array
     results = create_report(:trace => [Foo])
     assert_equal(1, results.total_allocated)
@@ -129,6 +167,12 @@ class TestReporter < Minitest::Test
 
   def test_class_tracing_with_array_and_start_stop
     results = create_start_stop_report(:trace => [Foo])
+    assert_equal(1, results.total_allocated)
+    assert_equal(0, results.total_retained)
+  end
+
+  def test_class_tracing_with_array_and_start_stop_on_module
+    results = create_convenient_start_stop_report(:trace => [Foo])
     assert_equal(1, results.total_allocated)
     assert_equal(0, results.total_retained)
   end
@@ -145,6 +189,12 @@ class TestReporter < Minitest::Test
     assert_equal(0, results.total_retained)
   end
 
+  def test_class_tracing_with_value_and_start_stop_on_module
+    results = create_convenient_start_stop_report(:trace => Foo)
+    assert_equal(1, results.total_allocated)
+    assert_equal(0, results.total_retained)
+  end
+
   def test_ignore_file_with_regex
     results = create_report(:ignore_files => /test_reporter\.rb/)
     assert_equal(3, results.total_allocated)
@@ -153,6 +203,12 @@ class TestReporter < Minitest::Test
 
   def test_ignore_file_with_regex_and_start_stop
     results = create_start_stop_report(:ignore_files => /test_reporter\.rb/)
+    assert_equal(3, results.total_allocated)
+    assert_equal(0, results.total_retained)
+  end
+
+  def test_ignore_file_with_regex_and_start_stop_on_module
+    results = create_convenient_start_stop_report(:ignore_files => /test_reporter\.rb/)
     assert_equal(3, results.total_allocated)
     assert_equal(0, results.total_retained)
   end
@@ -169,6 +225,12 @@ class TestReporter < Minitest::Test
     assert_equal(0, results.total_retained)
   end
 
+  def test_ignore_file_with_string_and_start_stop_on_module
+    results = create_convenient_start_stop_report(:ignore_files => 'test_reporter.rb|another_file.rb')
+    assert_equal(3, results.total_allocated)
+    assert_equal(0, results.total_retained)
+  end
+
   def test_allow_files_with_string
     results = create_report(:allow_files => 'test_reporter')
     assert_equal(13, results.total_allocated)
@@ -181,6 +243,12 @@ class TestReporter < Minitest::Test
     assert_equal(1, results.total_retained)
   end
 
+  def test_allow_files_with_string_and_start_stop_on_module
+    results = create_convenient_start_stop_report(:allow_files => 'test_reporter')
+    assert_equal(13, results.total_allocated)
+    assert_equal(1, results.total_retained)
+  end
+
   def test_allow_files_with_array
     results = create_report(:allow_files => ['test_reporter', 'another_file'])
     assert_equal(13, results.total_allocated)
@@ -189,6 +257,12 @@ class TestReporter < Minitest::Test
 
   def test_allow_files_with_array_and_start_stop
     results = create_start_stop_report(:allow_files => ['test_reporter', 'another_file'])
+    assert_equal(13, results.total_allocated)
+    assert_equal(1, results.total_retained)
+  end
+
+  def test_allow_files_with_array_and_start_stop_on_module
+    results = create_convenient_start_stop_report(:allow_files => ['test_reporter', 'another_file'])
     assert_equal(13, results.total_allocated)
     assert_equal(1, results.total_retained)
   end
@@ -207,6 +281,13 @@ class TestReporter < Minitest::Test
     assert(!io.string.include?("\033"), 'excludes color information')
   end
 
+  def test_no_color_output_and_start_stop_on_module
+    results = create_convenient_start_stop_report
+    io = StringIO.new
+    results.pretty_print io, color_output: false
+    assert(!io.string.include?("\033"), 'excludes color information')
+  end
+
   def test_color_output
     results = create_report
     io = StringIO.new
@@ -216,6 +297,13 @@ class TestReporter < Minitest::Test
 
   def test_color_output_with_start_stop
     results = create_start_stop_report
+    io = StringIO.new
+    results.pretty_print io, color_output: true
+    assert(io.string.include?("\033"), 'includes color information')
+  end
+
+  def test_color_output_with_start_stop_on_module
+    results = create_convenient_start_stop_report
     io = StringIO.new
     results.pretty_print io, color_output: true
     assert(io.string.include?("\033"), 'includes color information')
@@ -241,6 +329,13 @@ class TestReporter < Minitest::Test
     assert(io.string.include?("\033"), 'includes color information')
   end
 
+  def test_color_output_defaults_to_true_when_run_from_tty_with_start_stop_on_module
+    results = create_convenient_start_stop_report
+    io = StdoutMock.new
+    results.pretty_print io
+    assert(io.string.include?("\033"), 'includes color information')
+  end
+
   def test_mono_output_defaults_to_true_when_not_run_from_tty
     results = create_report
     io = StringIO.new
@@ -250,6 +345,13 @@ class TestReporter < Minitest::Test
 
   def test_mono_output_defaults_to_true_when_not_run_from_tty_with_start_stop
     results = create_start_stop_report
+    io = StringIO.new
+    results.pretty_print io
+    assert(!io.string.include?("\033"), 'excludes color information')
+  end
+
+  def test_mono_output_defaults_to_true_when_not_run_from_tty_with_start_stop_on_module
+    results = create_convenient_start_stop_report
     io = StringIO.new
     results.pretty_print io
     assert(!io.string.include?("\033"), 'excludes color information')
@@ -269,6 +371,18 @@ class TestReporter < Minitest::Test
 
   def test_reports_can_be_reused_with_different_color_options_and_start_stop
     results = create_start_stop_report
+
+    io = StringIO.new
+    results.pretty_print io, color_output: true
+    assert(io.string.include?("\033"), 'includes color information')
+
+    io = StringIO.new
+    results.pretty_print io, color_output: false
+    assert(!io.string.include?("\033"), 'excludes color information')
+  end
+
+  def test_reports_can_be_reused_with_different_color_options_and_start_stop_on_module
+    results = create_convenient_start_stop_report
 
     io = StringIO.new
     results.pretty_print io, color_output: true

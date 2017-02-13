@@ -7,6 +7,10 @@ module MemoryProfiler
   #     5.times { "foo" }
   #   end
   class Reporter
+    class << self
+      attr_accessor :current_reporter
+    end
+
     attr_reader :top, :trace, :generation, :report_results
 
     def initialize(opts = {})
