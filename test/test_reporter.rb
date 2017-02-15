@@ -2,27 +2,6 @@ require_relative 'test_helper'
 
 class TestReporter < Minitest::Test
 
-  class Foo; end
-  class BasicObjectSubclass < BasicObject ; end
-  class NilReportingClass
-    def class
-      # return nil when asked for the class
-      nil
-    end
-  end
-  class StringReportingClass
-    def class
-      # return a string when asked for the class
-      'StringReportingClass'
-    end
-  end
-  class NonStringNamedClass
-    # return a symbol when the class is asked for the name
-    def self.name
-      :Symbol
-    end
-  end
-
   # Reusable block for reporting.  Pass in an `Array` to retain objects after
   # allocation.
   def report_block(retained=[])
@@ -75,7 +54,7 @@ class TestReporter < Minitest::Test
     assert_equal(2, results.total_allocated)
     assert_equal(2, results.total_retained)
     assert_equal('BasicObject', results.allocated_objects_by_class[0][:data])
-    assert_equal('TestReporter::BasicObjectSubclass', results.allocated_objects_by_class[1][:data])
+    assert_equal('BasicObjectSubclass', results.allocated_objects_by_class[1][:data])
     assert_equal(2, results.retained_objects_by_location.length)
   end
 
@@ -100,7 +79,7 @@ class TestReporter < Minitest::Test
     end
     assert_equal(1, results.total_allocated)
     assert_equal(1, results.total_retained)
-    assert_equal('TestReporter::NilReportingClass', results.allocated_objects_by_class[0][:data])
+    assert_equal('NilReportingClass', results.allocated_objects_by_class[0][:data])
     assert_equal(1, results.retained_objects_by_location.length)
   end
 
@@ -111,7 +90,7 @@ class TestReporter < Minitest::Test
     end
     assert_equal(1, results.total_allocated)
     assert_equal(1, results.total_retained)
-    assert_equal('TestReporter::StringReportingClass', results.allocated_objects_by_class[0][:data])
+    assert_equal('StringReportingClass', results.allocated_objects_by_class[0][:data])
     assert_equal(1, results.retained_objects_by_location.length)
   end
 
