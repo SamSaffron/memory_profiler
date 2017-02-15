@@ -6,25 +6,30 @@ class TestReporter < Minitest::Test
   # allocation.
   def report_block(retained=[])
     lambda do
-      # Create an object from a gem outside memory_profiler which allocates
-      # its own objects internally
-      minitest_report = MiniTest::Reporter.new
+      if block_given?
+        yield
+      else
+        # Create an object from a gem outside memory_profiler which allocates
+        # its own objects internally
+        minitest_report = MiniTest::Reporter.new
 
-      # Create 10 strings
-      10.times { |i| i.to_s }
+        # Create 10 strings
+        10.times { |i| i.to_s }
 
-      # Create 1 string and retain it
-      retained << "hello"
+        # Create 1 string and retain it
+        retained << "hello"
 
-      # Create one object defined by this file
-      Foo.new
+
+        # Create one object defined by this file
+        Foo.new
+      end
     end
   end
 
   # Shared method that creates a Results with 1 retained object using options provided
-  def create_report(options={})
+  def create_report(options={}, &yield_for_report_block)
     retained = []
-    results = MemoryProfiler::Reporter.report options, &report_block(retained)
+    results = MemoryProfiler::Reporter.report options, &report_block(retained, &yield_for_report_block)
     results
   end
 
@@ -47,7 +52,7 @@ class TestReporter < Minitest::Test
 
   def test_basic_object
     retained = []
-    results = MemoryProfiler::Reporter.report do
+    results = create_report do
       retained << BasicObject.new
       retained << BasicObjectSubclass.new
     end
@@ -62,7 +67,7 @@ class TestReporter < Minitest::Test
     retained = []
     anon_class1 = Class.new
     anon_class2 = Class.new(String)
-    results = MemoryProfiler::Reporter.report do
+    results = create_report do
       retained << anon_class1.new
       retained << anon_class2.new
     end
@@ -74,7 +79,7 @@ class TestReporter < Minitest::Test
 
   def test_nil_reporting_class
     retained = []
-    results = MemoryProfiler::Reporter.report do
+    results = create_report do
       retained << NilReportingClass.new
     end
     assert_equal(1, results.total_allocated)
@@ -85,7 +90,7 @@ class TestReporter < Minitest::Test
 
   def test_string_reporting_class
     retained = []
-    results = MemoryProfiler::Reporter.report do
+    results = create_report do
       retained << StringReportingClass.new
     end
     assert_equal(1, results.total_allocated)
@@ -374,7 +379,7 @@ class TestReporter < Minitest::Test
 
   def test_non_string_named_class
     retained = []
-    results = MemoryProfiler::Reporter.report do
+    results = create_report do
       retained << NonStringNamedClass.new
       retained << "test"
     end
