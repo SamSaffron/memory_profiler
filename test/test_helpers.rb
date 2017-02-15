@@ -1,5 +1,27 @@
 require_relative 'test_helper'
 
+class Foo; end
+class BasicObjectSubclass < BasicObject ; end
+class NilReportingClass
+  def class
+    # return nil when asked for the class
+    nil
+  end
+end
+class StringReportingClass
+  def class
+    # return a string when asked for the class
+    'StringReportingClass'
+  end
+end
+class NonStringNamedClass
+  # return a symbol when the class is asked for the name
+  def self.name
+    :Symbol
+  end
+end
+
+
 module MemoryProfiler
 
   class TestHelpers < Minitest::Test

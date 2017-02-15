@@ -7,7 +7,11 @@ module MemoryProfiler
   #     5.times { "foo" }
   #   end
   class Reporter
-    attr_reader :top, :trace
+    class << self
+      attr_accessor :current_reporter
+    end
+
+    attr_reader :top, :trace, :generation, :report_results
 
     def initialize(opts = {})
       @top          = opts[:top] || 50
@@ -27,16 +31,16 @@ module MemoryProfiler
       self.new(opts).run(&block)
     end
 
-    # Collects object allocation and memory of ruby code inside of passed block.
-    def run(&block)
-
+    def start
       GC.start
       GC.disable
 
-      generation = GC.count
-      ObjectSpace.trace_object_allocations do
-        block.call
-      end
+      @generation = GC.count
+      ObjectSpace.trace_object_allocations_start
+    end
+
+    def stop
+      ObjectSpace.trace_object_allocations_stop
       allocated = object_list(generation)
       retained = StatHash.new.compare_by_identity
 
@@ -53,9 +57,15 @@ module MemoryProfiler
       end
       ObjectSpace.trace_object_allocations_clear
 
-      results = Results.new
-      results.register_results(allocated, retained, top)
-      results
+      @report_results = Results.new
+      @report_results.register_results(allocated, retained, top)
+    end
+
+    # Collects object allocation and memory of ruby code inside of passed block.
+    def run(&block)
+      start
+      block.call
+      stop
     end
 
     private
