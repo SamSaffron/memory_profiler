@@ -1,5 +1,3 @@
-require_relative 'test_helper'
-
 class Foo; end
 class BasicObjectSubclass < BasicObject ; end
 class NilReportingClass
