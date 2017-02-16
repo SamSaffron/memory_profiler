@@ -2,42 +2,36 @@ require_relative 'test_helper'
 
 class TestReporter < Minitest::Test
 
-  # Reusable block for reporting.  Pass in an `Array` to retain objects after
-  # allocation.
-  def report_block(retained=[])
-    lambda do
-      if block_given?
-        yield
-      else
-        # Create an object from a gem outside memory_profiler which allocates
-        # its own objects internally
-        minitest_report = MiniTest::Reporter.new
+  def setup
+    @retained = []
+  end
 
-        # Create 10 strings
-        10.times { |i| i.to_s }
+  # Reusable block for reporting.
+  def default_block
+    # Create an object from a gem outside memory_profiler which allocates
+    # its own objects internally
+    MiniTest::Reporter.new
 
-        # Create 1 string and retain it
-        retained << "hello"
+    # Create 10 strings
+    10.times { |i| i.to_s }
 
+    # Create 1 string and retain it
+    @retained << "hello"
 
-        # Create one object defined by this file
-        Foo.new
-      end
-    end
+    # Create one object defined by the test_helpers file
+    Foo.new
   end
 
   # Shared method that creates a Results with 1 retained object using options provided
-  def create_report(options={}, &yield_for_report_block)
-    retained = []
-    results = MemoryProfiler::Reporter.report options, &report_block(retained, &yield_for_report_block)
-    results
+  def create_report(options={}, &profiled_block)
+    profiled_block ||= -> { default_block }
+    MemoryProfiler::Reporter.report(options, &profiled_block)
   end
 
   def test_basic_object
-    retained = []
     results = create_report do
-      retained << BasicObject.new
-      retained << BasicObjectSubclass.new
+      @retained << BasicObject.new
+      @retained << BasicObjectSubclass.new
     end
     assert_equal(2, results.total_allocated)
     assert_equal(2, results.total_retained)
@@ -47,12 +41,11 @@ class TestReporter < Minitest::Test
   end
 
   def test_anonymous_class_object
-    retained = []
     anon_class1 = Class.new
     anon_class2 = Class.new(String)
     results = create_report do
-      retained << anon_class1.new
-      retained << anon_class2.new
+      @retained << anon_class1.new
+      @retained << anon_class2.new
     end
     assert_equal(2, results.total_allocated)
     assert_equal(2, results.total_retained)
@@ -61,9 +54,8 @@ class TestReporter < Minitest::Test
   end
 
   def test_nil_reporting_class
-    retained = []
     results = create_report do
-      retained << NilReportingClass.new
+      @retained << NilReportingClass.new
     end
     assert_equal(1, results.total_allocated)
     assert_equal(1, results.total_retained)
@@ -72,9 +64,8 @@ class TestReporter < Minitest::Test
   end
 
   def test_string_reporting_class
-    retained = []
     results = create_report do
-      retained << StringReportingClass.new
+      @retained << StringReportingClass.new
     end
     assert_equal(1, results.total_allocated)
     assert_equal(1, results.total_retained)
