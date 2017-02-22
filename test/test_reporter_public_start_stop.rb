@@ -1,16 +1,22 @@
 require_relative 'test_reporter'
 
-class TestReporterStartStop < TestReporter
+class TestReporterPublicStartStop < TestReporter
   # This class extends TestReporter so it includes all of the tests from
   # TestReporter plus any additional test_* cases below and it
   # overrides create_report to use the start/stop methods
 
+  # This specifically tests the public API of the start and stop methods of the
+  # MemoryProfiler module itself, and even does some extra tests exercising
+  # edge case handling of `current_reporter` which is done in those methods.
+  #
+  # When something fails here, and not in the private api tests, then there is
+  # something wrong specifically in the methods handling the `current_reporter`
+  # that needs to be fixed.
   def create_report(options={}, &profiled_block)
     profiled_block ||= -> { default_block }
-    reporter = MemoryProfiler::Reporter.new(options)
-    reporter.start
+    MemoryProfiler.start(options)
     profiled_block.call
-    reporter.stop
+    MemoryProfiler.stop
   end
 
   def test_module_stop_with_no_start
