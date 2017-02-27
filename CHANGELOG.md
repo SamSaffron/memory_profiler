@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.9.8
+- Add optional start/stop sematics to memory profiler api @nicklamuro @dgynn
+
 ## 0.9.7
 - Improved class name detection for proxy objects, BasicObject objects, and
  other edge cases @inossidabile @Hamdiakoguz @dgynn
