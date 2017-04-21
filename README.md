@@ -26,7 +26,7 @@ Or install it yourself as:
 ## Usage
 
 ```ruby
-require 'memory_profiler'
+require 'memory-profiler'
 report = MemoryProfiler.report do
   # run your code here
 end
