@@ -1,8 +1,9 @@
+[![Build Status](https://travis-ci.org/SamSaffron/memory_profiler.svg?branch=master)](https://travis-ci.org/SamSaffron/memory_profiler)
+[![Gem Version](https://badge.fury.io/rb/memory_profiler.svg)](https://rubygems.org/gems/memory_profiler)
+
 # MemoryProfiler
 
 A memory profiler for Ruby 
-
-[![Build Status](https://travis-ci.org/SamSaffron/memory_profiler.png?branch=master)](https://travis-ci.org/SamSaffron/memory_profiler)
 
 ## Requirements 
 
