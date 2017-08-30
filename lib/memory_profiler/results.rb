@@ -49,11 +49,12 @@ module MemoryProfiler
     def string_report(data, top)
       data.values
           .keep_if { |stat| stat.string_value }
-          .map! { |stat| [stat.string_value, stat.location] }
-          .group_by { |string, _location| string }
-          .sort_by {|string, list| [-list.size, string] }
+          .map! { |stat| [stat.string_value, stat.md5, stat.location] }
+          .group_by { |string, md5, _location| md5 || string }
+          .sort_by {|str_md5, list| [-list.size, str_md5] }
           .first(top)
-          .map { |string, list| [string, list.group_by { |_string, location| location }
+          .map { |_s_md5, list| [list.first[0], list] } # use a string as a key again
+          .map { |string, list| [string, list.group_by { |_string, _md5, location| location }
                                              .map { |location, locations| [location, locations.size] }
                                 ]
           }

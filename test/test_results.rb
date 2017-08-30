@@ -42,6 +42,35 @@ class TestResults < Minitest::Test
     assert_equal(expected, io.read)
   end
 
+  def test_string_report_with_md5_string_data
+    allocated = MemoryProfiler::StatHash.new
+    retained  = string_data(true)
+    results = MemoryProfiler::Results.new.register_results(allocated, retained, 50)
+
+    expected = <<-OUTPUT.gsub(/^ {6}/, "")
+      Retained String Report
+      -----------------------------------
+               2  "a"
+               1  #{file2.join(":")}
+               1  #{file1.join(":")}
+
+               2  "b"
+               1  #{file2.join(":")}
+               1  #{file1.join(":")}
+
+               1  "a"
+               1  #{file1.join(":")}
+
+    OUTPUT
+
+    io = StringIO.new
+    assert_silent { results.pretty_print(io) }
+
+    # Rewind as much as is in the retained string report
+    io.seek(-expected.size, IO::SEEK_END)
+    assert_equal(expected, io.read)
+  end
+
   private
 
   def string_data(md5=false)
