@@ -105,7 +105,7 @@ module MemoryProfiler
           memsize = ObjectSpace.memsize_of(obj) + rvalue_size_adjustment
           # compensate for API bug
           memsize = rvalue_size if memsize > 100_000_000_000
-          result[obj.__id__] = MemoryProfiler::Stat.new(class_name, gem, file, location, memsize, string)
+          result[obj.__id__] = MemoryProfiler::Stat.new(class_name, gem, file, location, memsize, string, nil)
         rescue
           # give up if any any error occurs inspecting the object
         end
