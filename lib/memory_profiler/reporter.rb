@@ -11,13 +11,14 @@ module MemoryProfiler
       attr_accessor :current_reporter
     end
 
-    attr_reader :top, :trace, :generation, :report_results
+    attr_reader :top, :trace, :generation, :report_results, :mem_lite
 
     def initialize(opts = {})
       @top          = opts[:top] || 50
       @trace        = opts[:trace] && Array(opts[:trace])
       @ignore_files = opts[:ignore_files] && Regexp.new(opts[:ignore_files])
       @allow_files  = opts[:allow_files] && /#{Array(opts[:allow_files]).join('|')}/
+      @mem_lite     = opts[:mem_lite]
     end
 
     # Helper for generating new reporter and running against block.
@@ -26,6 +27,11 @@ module MemoryProfiler
     # @option opts :trace a class or an array of classes you explicitly want to trace
     # @option opts :ignore_files a regular expression used to exclude certain files from tracing
     # @option opts :allow_files a string or array of strings to selectively include in tracing
+    # @option opts :mem_lite a boolean to use string summaries/digests instead of string dups
+    #
+    # Note: :mem_lite is significantly slower, but avoids memory explosion in
+    # large memory profiling situations with large strings
+    #
     # @return [MemoryProfiler::Results]
     def self.report(opts={}, &block)
       self.new(opts).run(&block)
@@ -100,12 +106,19 @@ module MemoryProfiler
           class_name = helper.lookup_class_name(klass)
           gem        = helper.guess_gem(file)
 
-          string     = '' << obj  if klass == String
-
           memsize = ObjectSpace.memsize_of(obj) + rvalue_size_adjustment
           # compensate for API bug
           memsize = rvalue_size if memsize > 100_000_000_000
-          result[obj.__id__] = MemoryProfiler::Stat.new(class_name, gem, file, location, memsize, string, nil)
+
+          if klass == String
+            if mem_lite
+              string = helper.string_summary(obj)
+              md5    = helper.lookup_string_digest(obj)
+            else
+              string = '' << obj
+            end
+          end
+          result[obj.__id__] = MemoryProfiler::Stat.new(class_name, gem, file, location, memsize, string, md5)
         rescue
           # give up if any any error occurs inspecting the object
         end
