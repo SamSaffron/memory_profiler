@@ -1,5 +1,6 @@
 module MemoryProfiler
   class Helpers
+    STRING_MAX = 199 # 200 chars
 
     def initialize
       @gem_guess_cache = Hash.new
@@ -28,5 +29,8 @@ module MemoryProfiler
       @class_name_cache[klass] ||= ((klass.is_a?(Class) && klass.name) || '<<Unknown>>').to_s
     end
 
+    def string_summary(string)
+      string[0..STRING_MAX]
+    end
   end
 end

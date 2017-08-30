@@ -48,6 +48,15 @@ module MemoryProfiler
                         "/home/sam/Source/discourse/app/assets")
     end
 
+    def test_string_summary
+      helper = Helpers.new
+      assert_equal("expected", helper.string_summary("expected"))
+    end
+
+    def test_string_summary_with_long_string
+      helper = Helpers.new
+      assert_equal("a" * 200, helper.string_summary("a" * 201))
+    end
   end
 
 end
