@@ -1,3 +1,5 @@
+require 'digest'
+
 module MemoryProfiler
   class Helpers
     STRING_MAX = 199 # 200 chars
@@ -6,6 +8,7 @@ module MemoryProfiler
       @gem_guess_cache = Hash.new
       @location_cache = Hash.new { |h,k| h[k] = Hash.new.compare_by_identity }
       @class_name_cache = Hash.new.compare_by_identity
+      @digest_cache = Hash.new
     end
 
     def guess_gem(path)
@@ -31,6 +34,10 @@ module MemoryProfiler
 
     def string_summary(string)
       string[0..STRING_MAX]
+    end
+
+    def lookup_string_digest(string)
+      @digest_cache[string] ||= Digest::MD5.hexdigest(string)
     end
   end
 end
