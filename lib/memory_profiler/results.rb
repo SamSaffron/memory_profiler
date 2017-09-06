@@ -99,7 +99,7 @@ module MemoryProfiler
       io.puts "#{title} String Report"
       io.puts @colorize.line("-----------------------------------")
       strings.each do |string, stats|
-        io.puts "#{stats.reduce(0) { |a, b| a + b[1] }.to_s.rjust(10)}  #{@colorize.string((string[0..200].inspect))}"
+        io.puts "#{stats.reduce(0) { |a, b| a + b[1] }.to_s.rjust(10)}  #{@colorize.string((string[0,200].inspect))}"
         stats.sort_by { |x, y| [-y, x] }.each do |location, count|
           io.puts "#{@colorize.path(count.to_s.rjust(10))}  #{location}"
         end
