@@ -49,11 +49,12 @@ module MemoryProfiler
     def string_report(data, top)
       data.values
           .keep_if { |stat| stat.string_value }
-          .map! { |stat| [stat.string_value, stat.location] }
-          .group_by { |string, _location| string }
-          .sort_by {|string, list| [-list.size, string] }
+          .map! { |stat| [stat.string_value, stat.md5, stat.location] }
+          .group_by { |string, md5, _location| md5 || string }
+          .sort_by {|str_md5, list| [-list.size, str_md5] }
           .first(top)
-          .map { |string, list| [string, list.group_by { |_string, location| location }
+          .map { |_s_md5, list| [list.first[0], list] } # use a string as a key again
+          .map { |string, list| [string, list.group_by { |_string, _md5, location| location }
                                              .map { |location, locations| [location, locations.size] }
                                 ]
           }
@@ -99,7 +100,7 @@ module MemoryProfiler
       io.puts "#{title} String Report"
       io.puts @colorize.line("-----------------------------------")
       strings.each do |string, stats|
-        io.puts "#{stats.reduce(0) { |a, b| a + b[1] }.to_s.rjust(10)}  #{@colorize.string((string[0..200].inspect))}"
+        io.puts "#{stats.reduce(0) { |a, b| a + b[1] }.to_s.rjust(10)}  #{@colorize.string((string[0,200].inspect))}"
         stats.sort_by { |x, y| [-y, x] }.each do |location, count|
           io.puts "#{@colorize.path(count.to_s.rjust(10))}  #{location}"
         end

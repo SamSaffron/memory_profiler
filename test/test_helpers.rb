@@ -48,6 +48,25 @@ module MemoryProfiler
                         "/home/sam/Source/discourse/app/assets")
     end
 
+    def test_string_summary
+      helper = Helpers.new
+      assert_equal("expected", helper.string_summary("expected"))
+    end
+
+    def test_string_summary_with_long_string
+      helper = Helpers.new
+      assert_equal("a" * 200, helper.string_summary("a" * 201))
+    end
+
+    def test_lookup_string_digest
+      helper = Helpers.new
+      cache  = helper.instance_variable_get(:@digest_cache)
+      assert_equal(0, cache.count)
+      assert_equal("acbd18db4cc2f85cedef654fccc4a4d8", helper.lookup_string_digest("foo"))
+      assert_equal(1, cache.count)
+      helper.lookup_string_digest("foo")
+      assert_equal(1, cache.count)
+    end
   end
 
 end

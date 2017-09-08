@@ -1,9 +1,9 @@
 module MemoryProfiler
   class Stat
 
-    attr_reader :class_name, :gem, :file, :location, :memsize, :string_value
+    attr_reader :class_name, :gem, :file, :location, :memsize, :string_value, :md5
 
-    def initialize(class_name, gem, file, location, memsize, string_value)
+    def initialize(class_name, gem, file, location, memsize, string_value, md5)
       @class_name = class_name
       @gem = gem
 
@@ -12,6 +12,7 @@ module MemoryProfiler
 
       @memsize = memsize
       @string_value = string_value
+      @md5 = md5
     end
 
   end

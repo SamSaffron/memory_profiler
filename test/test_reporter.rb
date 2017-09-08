@@ -179,4 +179,31 @@ class TestReporter < Minitest::Test
     assert_equal(2, results.retained_objects_by_location.length)
   end
 
+  def test_mem_lite_report
+    block = -> {
+      @retained << "foo"
+      @retained << "foo"
+      @retained << "foo"
+      @retained << "a" * 300
+      @retained << "a" * 300
+      @retained << "a" * 400
+    }
+    default = create_report(&block)
+    memlite = create_report(:mem_lite => true, &block)
+
+    assert_equal(9, memlite.total_allocated)
+    assert_equal(6, memlite.total_retained)
+    assert_equal("foo", memlite.strings_retained[0][0])
+    assert_equal("a"*200, memlite.strings_retained[1][0])
+    assert_equal("a"*200, memlite.strings_retained[2][0])
+    assert_equal(6, memlite.retained_objects_by_location.length)
+
+    default_io = StringIO.new
+    memlite_io = StringIO.new
+
+    default.pretty_print default_io
+    memlite.pretty_print memlite_io
+
+    assert_equal(default_io.string, memlite_io.string)
+  end
 end
