@@ -100,7 +100,7 @@ module MemoryProfiler
           class_name = helper.lookup_class_name(klass)
           gem        = helper.guess_gem(file)
 
-          string     = '' << obj  if klass == String
+          string     = klass == String ? helper.lookup_string(obj) : nil
 
           memsize = ObjectSpace.memsize_of(obj) + rvalue_size_adjustment
           # compensate for API bug
