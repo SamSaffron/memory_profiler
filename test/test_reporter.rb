@@ -179,4 +179,19 @@ class TestReporter < Minitest::Test
     assert_equal(2, results.retained_objects_by_location.length)
   end
 
+  def test_exception_handling
+    results = nil
+    assert_raises Exception do
+      results = create_report do
+        @retained << "hello"
+        raise Exception, "Raising exception"
+      end
+    end
+    assert_nil(results)
+    refute(GC.enable, "Re-enabling GC should return false because it is already enabled")
+
+    # Verify that memory_profiler is not reporting on itself following the exception
+    results = create_report(allow_files: 'lib/memory_profiler')
+    assert_equal(0, results.total_allocated)
+  end
 end

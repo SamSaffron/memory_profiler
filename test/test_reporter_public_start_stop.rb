@@ -15,7 +15,7 @@ class TestReporterPublicStartStop < TestReporter
   def create_report(options={}, &profiled_block)
     profiled_block ||= -> { default_block }
     MemoryProfiler.start(options)
-    profiled_block.call
+    profiled_block.call rescue nil
     MemoryProfiler.stop
   end
 
@@ -38,4 +38,7 @@ class TestReporterPublicStartStop < TestReporter
     assert_equal(17, results.total_allocated)
   end
 
+  def test_exception_handling
+    # This overrides and skips exception handling from the base TestReporter
+  end
 end

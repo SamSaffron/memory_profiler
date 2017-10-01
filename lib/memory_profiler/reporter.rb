@@ -64,8 +64,15 @@ module MemoryProfiler
     # Collects object allocation and memory of ruby code inside of passed block.
     def run(&block)
       start
-      block.call
-      stop
+      begin
+        block.call
+      rescue Exception
+        ObjectSpace.trace_object_allocations_stop
+        GC.enable
+        raise
+      else
+        stop
+      end
     end
 
     private
