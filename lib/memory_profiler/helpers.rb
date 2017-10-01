@@ -5,6 +5,7 @@ module MemoryProfiler
       @gem_guess_cache = Hash.new
       @location_cache = Hash.new { |h,k| h[k] = Hash.new.compare_by_identity }
       @class_name_cache = Hash.new.compare_by_identity
+      @string_cache = Hash.new
     end
 
     def guess_gem(path)
@@ -28,5 +29,8 @@ module MemoryProfiler
       @class_name_cache[klass] ||= ((klass.is_a?(Class) && klass.name) || '<<Unknown>>').to_s
     end
 
+    def lookup_string(obj)
+      @string_cache[obj] ||= String.new << obj
+    end
   end
 end
