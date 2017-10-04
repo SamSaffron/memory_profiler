@@ -47,16 +47,17 @@ module MemoryProfiler
     end
 
     def string_report(data, top)
-      data.values
-          .keep_if { |stat| stat.string_value }
-          .map! { |stat| [stat.string_value, stat.location] }
-          .group_by { |string, _location| string }
-          .sort_by {|string, list| [-list.size, string] }
-          .first(top)
-          .map { |string, list| [string, list.group_by { |_string, location| location }
-                                             .map { |location, locations| [location, locations.size] }
-                                ]
-          }
+      data.values.
+        keep_if { |stat| stat.string_value }.
+        # Hash by string and object_id. Strings >200 chars have been shortened
+        # and will have different object_ids
+        group_by { |stat| "#{stat.string_value} - #{stat.string_value.object_id}" }.
+        sort_by { |group_key, list| [-list.size, group_key] }.
+        first(top).
+        # Return array of [string, [location, count]]
+        map! { |_group_key, list| [list[0].string_value,
+                                   list.group_by { |stat| stat.location }.
+                                     map { |location, locations| [location, locations.size] } ] }
     end
 
     # Output the results of the report
@@ -99,7 +100,7 @@ module MemoryProfiler
       io.puts "#{title} String Report"
       io.puts @colorize.line("-----------------------------------")
       strings.each do |string, stats|
-        io.puts "#{stats.reduce(0) { |a, b| a + b[1] }.to_s.rjust(10)}  #{@colorize.string((string[0..200].inspect))}"
+        io.puts "#{stats.reduce(0) { |a, b| a + b[1] }.to_s.rjust(10)}  #{@colorize.string((string.inspect))}"
         stats.sort_by { |x, y| [-y, x] }.each do |location, count|
           io.puts "#{@colorize.path(count.to_s.rjust(10))}  #{location}"
         end
