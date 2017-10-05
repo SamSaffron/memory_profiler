@@ -49,15 +49,14 @@ module MemoryProfiler
     def string_report(data, top)
       data.values.
         keep_if { |stat| stat.string_value }.
-        # Hash by string and object_id. Strings >200 chars have been shortened
-        # and will have different object_ids
-        group_by { |stat| "#{stat.string_value} - #{stat.string_value.object_id}" }.
-        sort_by { |group_key, list| [-list.size, group_key] }.
+        group_by { |stat| stat.string_value.object_id }.
+        values.
+        sort_by! { |list| [-list.size, list[0].string_value] }.
         first(top).
-        # Return array of [string, [location, count]]
-        map! { |_group_key, list| [list[0].string_value,
-                                   list.group_by { |stat| stat.location }.
-                                     map { |location, locations| [location, locations.size] } ] }
+        # Return array of [string, [[location, count], [location, count], ...]
+        map! { |list| [list[0].string_value,
+                       list.group_by { |stat| stat.location }.
+                            map { |location, stat_list| [location, stat_list.size] } ] }
     end
 
     # Output the results of the report
