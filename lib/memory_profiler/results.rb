@@ -47,10 +47,17 @@ module MemoryProfiler
     end
 
     def string_report(data, top)
-      data.values.
+      grouped_strings = data.values.
         keep_if { |stat| stat.string_value }.
         group_by { |stat| stat.string_value.object_id }.
-        values.
+        values
+
+      if grouped_strings.size > top
+        cutoff = grouped_strings.sort_by!(&:size)[-top].size
+        grouped_strings.keep_if { |list| list.size >= cutoff }
+      end
+
+      grouped_strings.
         sort_by! { |list| [-list.size, list[0].string_value] }.
         first(top).
         # Return array of [string, [[location, count], [location, count], ...]
