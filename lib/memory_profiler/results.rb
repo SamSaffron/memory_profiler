@@ -58,7 +58,7 @@ module MemoryProfiler
       end
 
       grouped_strings.
-        sort_by! { |list| [-list.size, list[0].string_value] }.
+        sort! { |a, b| a.size == b.size ? a[0].string_value <=> b[0].string_value : b.size <=> a.size }.
         first(top).
         # Return array of [string, [[location, count], [location, count], ...]
         map! { |list| [list[0].string_value,
