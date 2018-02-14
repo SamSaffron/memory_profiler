@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.9.9
+- Add options for pretty printer to customize report
+
 ## 0.9.8
 - Add optional start/stop sematics to memory profiler api @nicklamuro @dgynn
 

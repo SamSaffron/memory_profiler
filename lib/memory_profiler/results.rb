@@ -63,6 +63,9 @@ module MemoryProfiler
     # @param [Hash] options the options for output
     # @option opts [String] :to_file a path to your log file
     # @option opts [Boolean] :color_output a flag for whether to colorize output
+    # @option opts [Integer] :retained_strings how many retained strings to print
+    # @option opts [Integer] :allocated_strings how many allocated strings to print
+    # @option opts [Boolean] :detailed_report should report include detailed information
     def pretty_print(io = $stdout, **options)
       # Handle the special case that Ruby PrettyPrint expects `pretty_print`
       # to be a customized pretty printing function for a class
@@ -76,26 +79,34 @@ module MemoryProfiler
       io.puts "Total allocated: #{total_allocated_memsize} bytes (#{total_allocated} objects)"
       io.puts "Total retained:  #{total_retained_memsize} bytes (#{total_retained} objects)"
 
-      io.puts
-      ["allocated", "retained"]
-          .product(["memory", "objects"])
-          .product(["gem", "file", "location", "class"])
-          .each do |(type, metric), name|
-            dump "#{type} #{metric} by #{name}", self.send("#{type}_#{metric}_by_#{name}"), io
-          end
+      if options[:detailed_report] != false
+        io.puts
+        ["allocated", "retained"]
+            .product(["memory", "objects"])
+            .product(["gem", "file", "location", "class"])
+            .each do |(type, metric), name|
+              dump "#{type} #{metric} by #{name}", self.send("#{type}_#{metric}_by_#{name}"), io
+            end
+      end
 
       io.puts
-      dump_strings(io, "Allocated", strings_allocated)
+      dump_strings(io, "Allocated", strings_allocated, limit: options[:allocated_strings])
       io.puts
-      dump_strings(io, "Retained", strings_retained)
+      dump_strings(io, "Retained", strings_retained, limit: options[:retained_strings])
 
       io.close if io.is_a? File
     end
 
     private
 
-    def dump_strings(io, title, strings)
+    def dump_strings(io, title, strings, limit: nil)
       return unless strings
+
+      if limit
+        return if limit == 0
+        strings = strings[0...limit]
+      end
+
       io.puts "#{title} String Report"
       io.puts @colorize.line("-----------------------------------")
       strings.each do |string, stats|
