@@ -28,6 +28,16 @@ module MemoryProfiler
       assert_equal(expected, helper.guess_gem(path))
     end
 
+    def test_stdlib_parse
+      assert_gem_parse( "psych",
+                       "/home/sam/.rbenv/versions/2.5.0/lib/ruby/2.5.0/psych.rb")
+
+      assert_gem_parse("rss",
+                       "/home/sam/.rbenv/versions/2.5.0/lib/ruby/2.5.0/rss/utils.rb")
+
+    end
+
+
     def test_rubygems_parse
       assert_gem_parse( "rubygems",
                         "/home/sam/.rbenv/versions/ruby-head/lib/ruby/2.1.0/rubygems/version.rb")

@@ -14,6 +14,8 @@ module MemoryProfiler
           gemname
         elsif /\/rubygems[\.\/]/ =~ path
           "rubygems".freeze
+        elsif /ruby\/2\.[^\/]+\/(?<stdlib>[^\/\.]+)/ =~ path
+          stdlib
         elsif /(?<app>[^\/]+\/(bin|app|lib))/ =~ path
           app
         else

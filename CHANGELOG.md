@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.9.10
+- Add better detection for stdlib "gems"
+
 ## 0.9.9
 - Add options for pretty printer to customize report
 
