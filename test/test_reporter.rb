@@ -194,4 +194,26 @@ class TestReporter < Minitest::Test
     results = create_report(allow_files: 'lib/memory_profiler')
     assert_equal(0, results.total_allocated)
   end
+
+  def test_strings_report
+    # Note: There is something strange about `string *`. The first time it is dup'd it allocates 2 objects.
+    string_250 = String.new("1234567890" * 25)
+    string_300 = String.new("1234567890" * 30)
+
+    results = create_report do
+      string_250.dup
+      string_250.dup
+      5.times { string_250.dup }
+      string_300.dup
+    end
+
+    assert_equal(8, results.total_allocated, "8 strings should be allocated")
+    assert_equal(2, results.strings_allocated.size, "2 unique strings should be observed")
+    assert_equal(results.strings_allocated[0][0],
+                 results.strings_allocated[1][0], "The 2 unique strings have the same summary string")
+    assert_equal(200, results.strings_allocated[0][0].size, "The first string summary should be shortened to 200 chars")
+    assert_equal(3, results.strings_allocated[0][1].size, "The first string was allocated in 3 locations")
+    assert_equal(5, results.strings_allocated[0][1][0][1], "The first string was allocated in 5 times in the first location")
+  end
+
 end

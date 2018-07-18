@@ -32,7 +32,10 @@ module MemoryProfiler
     end
 
     def lookup_string(obj)
-      @string_cache[obj] ||= String.new << obj
+      # This string is shortened to 200 characters which is what the string report shows
+      # The string report can still list unique strings longer than 200 characters
+      #   separately because the object_id of the shortened string will be different
+      @string_cache[obj] ||= obj[0,200]
     end
   end
 end

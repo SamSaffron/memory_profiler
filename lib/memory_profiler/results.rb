@@ -47,16 +47,23 @@ module MemoryProfiler
     end
 
     def string_report(data, top)
-      data.values
-          .keep_if { |stat| stat.string_value }
-          .map! { |stat| [stat.string_value, stat.location] }
-          .group_by { |string, _location| string }
-          .sort_by {|string, list| [-list.size, string] }
-          .first(top)
-          .map { |string, list| [string, list.group_by { |_string, location| location }
-                                             .map { |location, locations| [location, locations.size] }
-                                ]
-          }
+      grouped_strings = data.values.
+        keep_if { |stat| stat.string_value }.
+        group_by { |stat| stat.string_value.object_id }.
+        values
+
+      if grouped_strings.size > top
+        cutoff = grouped_strings.sort_by!(&:size)[-top].size
+        grouped_strings.keep_if { |list| list.size >= cutoff }
+      end
+
+      grouped_strings.
+        sort! { |a, b| a.size == b.size ? a[0].string_value <=> b[0].string_value : b.size <=> a.size }.
+        first(top).
+        # Return array of [string, [[location, count], [location, count], ...]
+        map! { |list| [list[0].string_value,
+                       list.group_by { |stat| stat.location }.
+                            map { |location, stat_list| [location, stat_list.size] } ] }
     end
 
     # Output the results of the report
@@ -110,7 +117,7 @@ module MemoryProfiler
       io.puts "#{title} String Report"
       io.puts @colorize.line("-----------------------------------")
       strings.each do |string, stats|
-        io.puts "#{stats.reduce(0) { |a, b| a + b[1] }.to_s.rjust(10)}  #{@colorize.string((string[0..200].inspect))}"
+        io.puts "#{stats.reduce(0) { |a, b| a + b[1] }.to_s.rjust(10)}  #{@colorize.string((string.inspect))}"
         stats.sort_by { |x, y| [-y, x] }.each do |location, count|
           io.puts "#{@colorize.path(count.to_s.rjust(10))}  #{location}"
         end
