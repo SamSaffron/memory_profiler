@@ -65,7 +65,7 @@ module MemoryProfiler
     def run(&block)
       start
       begin
-        block.call
+        yield
       rescue Exception
         ObjectSpace.trace_object_allocations_stop
         GC.enable
