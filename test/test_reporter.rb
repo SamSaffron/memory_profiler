@@ -216,4 +216,12 @@ class TestReporter < Minitest::Test
     assert_equal(5, results.strings_allocated[0][1][0][1], "The first string was allocated in 5 times in the first location")
   end
 
+  def test_yield_block
+    results = MemoryProfiler.report do
+      # Do not allocate anything
+    end
+    assert_equal(0, results.total_allocated)
+    assert_equal(0, results.total_retained)
+    assert_equal(0, results.retained_objects_by_location.length)
+  end
 end
