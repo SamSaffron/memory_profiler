@@ -213,7 +213,7 @@ class TestReporter < Minitest::Test
                  results.strings_allocated[1][0], "The 2 unique strings have the same summary string")
     assert_equal(200, results.strings_allocated[0][0].size, "The first string summary should be shortened to 200 chars")
     assert_equal(3, results.strings_allocated[0][1].size, "The first string was allocated in 3 locations")
-    assert_equal(5, results.strings_allocated[0][1][0][1], "The first string was allocated in 5 times in the first location")
+    assert_equal(5, results.strings_allocated[0][1][0][1], "The first string was allocated 5 times in the first location")
   end
 
   def test_yield_block
