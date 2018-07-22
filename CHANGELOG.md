@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.9.11
+- Reduce memory needed for string allocation tracing @dgynn
+- Use yield rather than block.call to reduce an allocation @dgynn
+- Ensure string allocation locations sort consistently @dgynn
+
 ## 0.9.10
 - Add better detection for stdlib "gems"
 
