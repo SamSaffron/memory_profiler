@@ -216,6 +216,25 @@ class TestReporter < Minitest::Test
     assert_equal(5, results.strings_allocated[0][1][0][1], "The first string was allocated 5 times in the first location")
   end
 
+  def test_no_strings_retained_report
+    # Strings longer than 23 characters share a reference to a "shared" frozen string which should also be GC'd
+    results = create_report do
+      5.times do |i|
+        short_text = "SHORT TEXT ##{i}"
+        short_text.dup
+        long_text = "LONG TEXT ##{i} 12345678901234567890123456789012345678901234567890"
+        long_text.dup
+        very_long_text = "VERY LONG TEXT ##{i} 12345678901234567890123456789012345678901234567890 12345678901234567890123456789012345678901234567890 12345678901234567890123456789012345678901234567890 12345678901234567890123456789012345678901234567890"
+        very_long_text.dup
+        nil # Prevent the last frozen string from being the return value of the block
+      end
+    end
+
+    assert_equal(55, results.total_allocated, "55 strings should be allocated")
+    assert_equal(20, results.strings_allocated.size, "20 unique strings should be observed")
+    assert_equal(0, results.strings_retained.size, "0 unique strings should be retained")
+  end
+
   def test_yield_block
     results = MemoryProfiler.report do
       # Do not allocate anything
