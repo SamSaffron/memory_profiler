@@ -235,6 +235,24 @@ class TestReporter < Minitest::Test
     assert_equal(0, results.strings_retained.size, "0 unique strings should be retained")
   end
 
+  def test_symbols_report
+    skip if RUBY_VERSION < "2.3.0".freeze
+
+    string = "this is a string"
+
+    results = create_report do
+      string.to_sym
+    end
+
+    assert_equal(3, results.total_allocated)
+    assert_equal(0, results.total_retained)
+    assert_equal(1, results.strings_allocated.size)
+    assert_equal('String', results.allocated_objects_by_class[0][:data])
+    assert_equal(2, results.allocated_objects_by_class[0][:count])
+    assert_equal('Symbol', results.allocated_objects_by_class[1][:data])
+    assert_equal(1, results.allocated_objects_by_class[1][:count])
+  end
+
   def test_yield_block
     results = MemoryProfiler.report do
       # Do not allocate anything
