@@ -111,9 +111,11 @@ module MemoryProfiler
           class_name = helper.lookup_class_name(klass)
           gem        = helper.guess_gem(file)
 
+          # we do memsize first to avoid freezing as a side effect and shifting
+          # storage to the new frozen string, this happens on @hash[s] in lookup_string
+          memsize = ObjectSpace.memsize_of(obj) + rvalue_size_adjustment
           string     = klass == String ? helper.lookup_string(obj) : nil
 
-          memsize = ObjectSpace.memsize_of(obj) + rvalue_size_adjustment
           # compensate for API bug
           memsize = rvalue_size if memsize > 100_000_000_000
           result[obj.__id__] = MemoryProfiler::Stat.new(class_name, gem, file, location, memsize, string)
