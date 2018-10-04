@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.9.12
+- Correct bug under-reporting memory for large string allocation @sam
+
 ## 0.9.11
 - Reduce memory needed for string allocation tracing @dgynn
 - Use yield rather than block.call to reduce an allocation @dgynn
