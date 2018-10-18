@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+RUBY_BELOW_2_3 = RUBY_VERSION < "2.3.0".freeze
+
 class Foo; end
 class BasicObjectSubclass < BasicObject ; end
 class NilReportingClass

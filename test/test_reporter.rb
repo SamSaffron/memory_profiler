@@ -9,20 +9,38 @@ class TestReporter < Minitest::Test
   end
 
   # Reusable block for reporting.
-  def default_block
-    # Create an object from a gem outside memory_profiler which allocates
-    # its own objects internally
-    MiniTest::Reporter.new
+  if RUBY_BELOW_2_3
+    def default_block
+      # Create an object from a gem outside memory_profiler which allocates
+      # its own objects internally
+      MiniTest::Reporter.new
 
-    # Create 10 strings
-    10.times { |i| i.to_s }
+      # Create 10 strings
+      10.times { |i| i.to_s }
 
-    # Create 1 string and retain it
-    @retained << +"hello"
+      # Create 1 string and retain it
+      @retained << "hello"
 
-    # Create one object defined by the test_helpers file
-    Foo.new
+      # Create one object defined by the test_helpers file
+      Foo.new
+    end
+  else
+    def default_block
+      # Create an object from a gem outside memory_profiler which allocates
+      # its own objects internally
+      MiniTest::Reporter.new
+
+      # Create 10 strings
+      10.times { |i| i.to_s }
+
+      # Create 1 string and retain it
+      @retained << +"hello"
+
+      # Create one object defined by the test_helpers file
+      Foo.new
+    end
   end
+
 
   # Shared method that creates a Results with 1 retained object using options provided
   def create_report(options={}, &profiled_block)
@@ -164,12 +182,8 @@ class TestReporter < Minitest::Test
     assert(!io.string.include?("\033"), 'excludes color information')
   end
 
-  def test_non_string_named_class
-    retained = []
-    results = create_report do
-      retained << NonStringNamedClass.new
-      retained << +"test"
-    end
+  def check_non_string_named_class(&block)
+    results = create_report(&block)
 
     io = StringIO.new
     results.pretty_print io
@@ -181,12 +195,30 @@ class TestReporter < Minitest::Test
     assert_equal(2, results.retained_objects_by_location.length)
   end
 
+  if RUBY_BELOW_2_3
+    def test_non_string_named_class
+      retained = []
+      check_non_string_named_class do
+        retained << NonStringNamedClass.new
+        retained << "test"
+      end
+    end
+  else
+    def test_non_string_named_class
+      retained = []
+      check_non_string_named_class do
+        retained << NonStringNamedClass.new
+        retained << +"test"
+      end
+    end
+  end
+
   def test_exception_handling
     results = nil
     assert_raises Exception do
       results = create_report do
-        @retained << +"hello"
-        raise Exception, +"Raising exception"
+        @retained << "hello"
+        raise Exception, "Raising exception"
       end
     end
     assert_nil(results)
@@ -232,15 +264,16 @@ class TestReporter < Minitest::Test
       end
     end
 
-    assert_equal(45, results.total_allocated, "45 strings should be allocated")
+    expected_strings = RUBY_BELOW_2_3 ? 55 : 45
+    assert_equal(expected_strings, results.total_allocated, "#{expected_strings} strings should be allocated")
     assert_equal(20, results.strings_allocated.size, "20 unique strings should be observed")
     assert_equal(0, results.strings_retained.size, "0 unique strings should be retained")
   end
 
   def test_symbols_report
-    skip if RUBY_VERSION < "2.3.0".freeze
+    skip if RUBY_BELOW_2_3
 
-    string = "this is a string"
+    string = +"this is a string"
 
     results = create_report do
       string.to_sym
