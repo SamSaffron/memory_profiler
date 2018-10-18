@@ -1,5 +1,16 @@
 module MemoryProfiler
   class Results
+    UNIT_PREFIXES = {
+      0 => 'B',
+      3 => 'kB',
+      6 => 'MB',
+      9 => 'GB',
+      12 => 'TB',
+      15 => 'PB',
+      18 => 'EB',
+      21 => 'ZB',
+      24 => 'YB'
+    }.freeze
 
     def self.register_type(name, stat_attribute)
       @@lookups ||= []
@@ -46,6 +57,14 @@ module MemoryProfiler
       self
     end
 
+    def scale_bytes(bytes)
+      return "0 B" if bytes.zero?
+
+      scale = Math.log10(bytes).div(3) * 3
+      scale = 24 if scale > 24
+      "#{(bytes / 10.0**scale).round(2)} #{UNIT_PREFIXES[scale]}"
+    end
+
     def string_report(data, top)
       grouped_strings = data.values.
         keep_if { |stat| stat.string_value }.
@@ -76,6 +95,7 @@ module MemoryProfiler
     # @option opts [Integer] :retained_strings how many retained strings to print
     # @option opts [Integer] :allocated_strings how many allocated strings to print
     # @option opts [Boolean] :detailed_report should report include detailed information
+    # @option opts [Boolean] :scale_bytes calculates unit prefixes for the numbers of bytes
     def pretty_print(io = $stdout, **options)
       # Handle the special case that Ruby PrettyPrint expects `pretty_print`
       # to be a customized pretty printing function for a class
@@ -86,8 +106,16 @@ module MemoryProfiler
       color_output = options.fetch(:color_output) { io.respond_to?(:isatty) && io.isatty }
       @colorize = color_output ? Polychrome.new : Monochrome.new
 
-      io.puts "Total allocated: #{total_allocated_memsize} bytes (#{total_allocated} objects)"
-      io.puts "Total retained:  #{total_retained_memsize} bytes (#{total_retained} objects)"
+      if options[:scale_bytes]
+        total_allocated_output = scale_bytes(total_allocated_memsize)
+        total_retained_output = scale_bytes(total_retained_memsize)
+      else
+        total_allocated_output = "#{total_allocated_memsize} bytes"
+        total_retained_output = "#{total_retained_memsize} bytes"
+      end
+
+      io.puts "Total allocated: #{total_allocated_output} (#{total_allocated} objects)"
+      io.puts "Total retained:  #{total_retained_output} (#{total_retained} objects)"
 
       if options[:detailed_report] != false
         io.puts
@@ -95,7 +123,8 @@ module MemoryProfiler
             .product(["memory", "objects"])
             .product(["gem", "file", "location", "class"])
             .each do |(type, metric), name|
-              dump "#{type} #{metric} by #{name}", self.send("#{type}_#{metric}_by_#{name}"), io
+              scale_data = metric == "memory" && options[:scale_bytes]
+              dump "#{type} #{metric} by #{name}", self.send("#{type}_#{metric}_by_#{name}"), io, scale_data
             end
       end
 
@@ -129,12 +158,13 @@ module MemoryProfiler
       nil
     end
 
-    def dump(description, data, io)
+    def dump(description, data, io, scale_data)
       io.puts description
       io.puts @colorize.line("-----------------------------------")
       if data && !data.empty?
         data.each do |item|
-          io.puts "#{item[:count].to_s.rjust(10)}  #{item[:data]}"
+          data_string = scale_data ? scale_bytes(item[:count]) : item[:count].to_s
+          io.puts "#{data_string.rjust(10)}  #{item[:data]}"
         end
       else
         io.puts "NO DATA"
