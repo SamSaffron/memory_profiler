@@ -1,16 +1,15 @@
 module MemoryProfiler
   class Results
-
     UNIT_PREFIXES = {
-      0 => 'B'.freeze,
-      3 => 'kB'.freeze,
-      6 => 'MB'.freeze,
-      9 => 'GB'.freeze,
-      12 => 'TB'.freeze,
-      15 => 'PB'.freeze,
-      18 => 'EB'.freeze,
-      21 => 'ZB'.freeze,
-      24 => 'YB'.freeze
+      0 => 'B',
+      3 => 'kB',
+      6 => 'MB',
+      9 => 'GB',
+      12 => 'TB',
+      15 => 'PB',
+      18 => 'EB',
+      21 => 'ZB',
+      24 => 'YB'
     }.freeze
 
     def self.register_type(name, stat_attribute)
