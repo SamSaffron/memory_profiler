@@ -232,7 +232,7 @@ class TestReporter < Minitest::Test
       end
     end
 
-    assert_equal(55, results.total_allocated, "55 strings should be allocated")
+    assert_equal(45, results.total_allocated, "45 strings should be allocated")
     assert_equal(20, results.strings_allocated.size, "20 unique strings should be observed")
     assert_equal(0, results.strings_retained.size, "0 unique strings should be retained")
   end
