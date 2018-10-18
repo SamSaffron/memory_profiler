@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module MemoryProfiler
   class Helpers
 
@@ -13,13 +15,13 @@ module MemoryProfiler
         if /(\/gems\/.*)*\/gems\/(?<gemname>[^\/]+)/ =~ path
           gemname
         elsif /\/rubygems[\.\/]/ =~ path
-          "rubygems".freeze
+          "rubygems"
         elsif /ruby\/2\.[^\/]+\/(?<stdlib>[^\/\.]+)/ =~ path
           stdlib
         elsif /(?<app>[^\/]+\/(bin|app|lib))/ =~ path
           app
         else
-          "other".freeze
+          "other"
         end
     end
 

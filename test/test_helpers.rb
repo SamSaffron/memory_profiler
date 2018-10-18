@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class Foo; end
 class BasicObjectSubclass < BasicObject ; end
 class NilReportingClass

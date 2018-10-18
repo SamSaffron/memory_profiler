@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative 'test_helper'
 
 class TestReporter < Minitest::Test
@@ -16,7 +18,7 @@ class TestReporter < Minitest::Test
     10.times { |i| i.to_s }
 
     # Create 1 string and retain it
-    @retained << "hello"
+    @retained << +"hello"
 
     # Create one object defined by the test_helpers file
     Foo.new
@@ -166,7 +168,7 @@ class TestReporter < Minitest::Test
     retained = []
     results = create_report do
       retained << NonStringNamedClass.new
-      retained << "test"
+      retained << +"test"
     end
 
     io = StringIO.new
@@ -183,8 +185,8 @@ class TestReporter < Minitest::Test
     results = nil
     assert_raises Exception do
       results = create_report do
-        @retained << "hello"
-        raise Exception, "Raising exception"
+        @retained << +"hello"
+        raise Exception, +"Raising exception"
       end
     end
     assert_nil(results)
