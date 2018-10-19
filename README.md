@@ -58,6 +58,7 @@ The report method can take a few options:
 * `allow_files`: include only certain files from tracing - can be given as a String, Regexp, or array of Strings
 * `ignore_files`: exclude certain files from tracing - can be given as a String or Regexp
 * `trace`: an array of classes for which you explicitly want to trace object allocations
+* `scale_bytes`: flag to convert byte units (e.g. 183200000 is reported as 183.2 MB, rounds with a precision of 2 decimal digits)
 
 Check out `Reporter#new` for more details.
 
