@@ -3,11 +3,11 @@
 
 # MemoryProfiler
 
-A memory profiler for Ruby 
+A memory profiler for Ruby
 
-## Requirements 
+## Requirements
 
-Ruby(MRI) Version 2.1.0 and above. 
+Ruby(MRI) Version 2.3.7 and above.
 
 ## Installation
 
@@ -365,7 +365,7 @@ The report breaks down 2 key concepts.
 
 **Allocated**: All object allocation and memory allocation during code block.
 
-As a general rule "retained" will always be smaller than or equal to allocated. 
+As a general rule "retained" will always be smaller than or equal to allocated.
 
 Memory profiler will tell you aggregate costs of the above, for example requiring the mime-types gem above results in approx 2MB of retained memory in 22K or so objects. The actual RSS cost will always be slightly higher as MRI heaps are not squashed to size and memory fragments. In future we may be able to calculate a rough long term GC cost of retained objects (for major GCs).
 
