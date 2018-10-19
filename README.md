@@ -7,7 +7,7 @@ A memory profiler for Ruby
 
 ## Requirements
 
-Ruby(MRI) Version 2.3.7 and above.
+Ruby(MRI) Version 2.3.8 and above.
 
 ## Installation
 
