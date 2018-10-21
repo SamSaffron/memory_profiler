@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "memory_profiler/version"
 require "memory_profiler/helpers"
 require "memory_profiler/polychrome"

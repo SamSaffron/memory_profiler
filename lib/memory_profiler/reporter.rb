@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'objspace'
 module MemoryProfiler
   # Reporter is the top level API used for generating memory reports.
@@ -94,7 +96,7 @@ module MemoryProfiler
       ObjectSpace.each_object do |obj|
         next unless ObjectSpace.allocation_generation(obj) == generation
 
-        file = ObjectSpace.allocation_sourcefile(obj) || "(no name)".freeze
+        file = ObjectSpace.allocation_sourcefile(obj) || "(no name)"
         next if @ignore_files && @ignore_files =~ file
         next if @allow_files && !(@allow_files =~ file)
 

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative 'test_helper'
 
 class TestReporter < Minitest::Test
@@ -16,7 +18,7 @@ class TestReporter < Minitest::Test
     10.times { |i| i.to_s }
 
     # Create 1 string and retain it
-    @retained << "hello"
+    @retained << +"hello"
 
     # Create one object defined by the test_helpers file
     Foo.new
@@ -166,7 +168,7 @@ class TestReporter < Minitest::Test
     retained = []
     results = create_report do
       retained << NonStringNamedClass.new
-      retained << "test"
+      retained << +"test"
     end
 
     io = StringIO.new
@@ -183,8 +185,8 @@ class TestReporter < Minitest::Test
     results = nil
     assert_raises Exception do
       results = create_report do
-        @retained << "hello"
-        raise Exception, "Raising exception"
+        @retained << +"hello"
+        raise Exception, +"Raising exception"
       end
     end
     assert_nil(results)
@@ -230,14 +232,12 @@ class TestReporter < Minitest::Test
       end
     end
 
-    assert_equal(55, results.total_allocated, "55 strings should be allocated")
+    assert_equal(45, results.total_allocated, "45 strings should be allocated")
     assert_equal(20, results.strings_allocated.size, "20 unique strings should be observed")
     assert_equal(0, results.strings_retained.size, "0 unique strings should be retained")
   end
 
   def test_symbols_report
-    skip if RUBY_VERSION < "2.3.0".freeze
-
     string = "this is a string"
 
     results = create_report do

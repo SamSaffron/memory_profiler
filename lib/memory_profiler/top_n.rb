@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module MemoryProfiler
   module TopN
     # Fast approach for determining the top_n entries in a Hash of Stat objects.

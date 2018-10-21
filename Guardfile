@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 guard :minitest do
   # with Minitest::Unit
   watch(%r{^test/(.*)\/?test_(.*)\.rb$})
