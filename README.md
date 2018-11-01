@@ -52,13 +52,14 @@ be the only time you can retrieve the report using this API.
 
 ## Options
 
-The report method can take a few options:
+### `report`
+
+The `report` method can take a few options:
 
 * `top`: maximum number of entries to display in a report (default is 50)
 * `allow_files`: include only certain files from tracing - can be given as a String, Regexp, or array of Strings
 * `ignore_files`: exclude certain files from tracing - can be given as a String or Regexp
 * `trace`: an array of classes for which you explicitly want to trace object allocations
-* `scale_bytes`: flag to convert byte units (e.g. 183200000 is reported as 183.2 MB, rounds with a precision of 2 decimal digits)
 
 Check out `Reporter#new` for more details.
 
@@ -85,7 +86,20 @@ allocated memory by file
 . . .
 ```
 
-Also you can print report to file. For this use `pretty_print` method with `to_file` option and `path_to_your_log_file` string:
+### `pretty_print`
+
+The `pretty_print` method can take a few options:
+
+* `to_file`: a path to your log file - can be given a String
+* `color_output`: a flag for whether to colorize output - can be given a Boolean
+* `retained_strings`: how many retained strings to print - can be given an Integer
+* `allocated_strings`: how many allocated strings to print - can be given a String
+* `detailed_report`: should report include detailed information - can be given a Boolean
+* `scale_bytes`: flag to convert byte units (e.g. 183200000 is reported as 183.2 MB, rounds with a precision of 2 decimal digits) - can be given a Boolean
+
+Check out `Results#pretty_print` for more details.
+
+For example to report to file, use `pretty_print` method with `to_file` option and `path_to_your_log_file` string:
 ```
 $ pry
 pry> require 'memory_profiler'
