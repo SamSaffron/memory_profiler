@@ -88,7 +88,6 @@ module MemoryProfiler
     def object_list(generation)
 
       rvalue_size = GC::INTERNAL_CONSTANTS[:RVALUE_SIZE]
-      rvalue_size_adjustment = RUBY_VERSION < '2.2' ? rvalue_size : 0
       helper = Helpers.new
 
       result = StatHash.new.compare_by_identity
@@ -115,7 +114,7 @@ module MemoryProfiler
 
           # we do memsize first to avoid freezing as a side effect and shifting
           # storage to the new frozen string, this happens on @hash[s] in lookup_string
-          memsize = ObjectSpace.memsize_of(obj) + rvalue_size_adjustment
+          memsize = ObjectSpace.memsize_of(obj)
           string     = klass == String ? helper.lookup_string(obj) : nil
 
           # compensate for API bug
