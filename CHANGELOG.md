@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.9.13 - 22-03-2019
+
+- remove support explicitly for all EOL rubies, 2.1 and 2.2
+- frozen string literal comment @RST-J
+- scale_bytes option @RST-J
+
 ## 0.9.12
 - Correct bug under-reporting memory for large string allocation @sam
 
