@@ -64,7 +64,7 @@ module MemoryProfiler
 
       scale = Math.log10(bytes).div(3) * 3
       scale = 24 if scale > 24
-      "#{(bytes / 10.0**scale).round(2)} #{UNIT_PREFIXES[scale]}"
+      "%.2f #{UNIT_PREFIXES[scale]}" % (bytes / 10.0**scale)
     end
 
     def string_report(data, top)
