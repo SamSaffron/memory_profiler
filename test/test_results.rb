@@ -50,7 +50,7 @@ class TestResults < Minitest::Test
     io = StringIO.new
     result.pretty_print(io, scale_bytes: true)
 
-    assert_match(/^Total allocated: #{total_size.round(2)} kB/, io.string, 'The total allocated memsize is scaled.')
-    assert_match(/^ +#{array_size.round(2)} kB  Array$/, io.string, 'The allocated memsize for Array is scaled.')
+    assert_match(/^Total allocated: #{"%.2f" % total_size} kB/, io.string, 'The total allocated memsize is scaled.')
+    assert_match(/^ +#{"%.2f" % array_size} kB  Array$/, io.string, 'The allocated memsize for Array is scaled.')
   end
 end
