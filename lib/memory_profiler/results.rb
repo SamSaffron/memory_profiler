@@ -123,13 +123,14 @@ module MemoryProfiler
 
       if options[:detailed_report] != false
         io.puts
-        ["allocated", "retained"]
-            .product(["memory", "objects"])
-            .product(["gem", "file", "location", "class"])
-            .each do |(type, metric), name|
+        ["allocated", "retained"].each do |type|
+          ["memory", "objects"].each do |metric|
+            ["gem", "file", "location", "class"].each do |name|
               scale_data = metric == "memory" && options[:scale_bytes]
               dump "#{type} #{metric} by #{name}", self.send("#{type}_#{metric}_by_#{name}"), io, scale_data
             end
+          end
+        end
       end
 
       io.puts
