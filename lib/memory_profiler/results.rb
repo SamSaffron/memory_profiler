@@ -18,8 +18,10 @@ module MemoryProfiler
       @@lookups ||= []
       @@lookups << [name, stat_attribute]
 
-      ["allocated", "retained"].product(["objects", "memory"]).each do |type, metric|
-        attr_accessor "#{type}_#{metric}_by_#{name}"
+      ["allocated", "retained"].each do |type|
+        ["objects", "memory"].each do |metric|
+          attr_accessor "#{type}_#{metric}_by_#{name}"
+        end
       end
     end
 
