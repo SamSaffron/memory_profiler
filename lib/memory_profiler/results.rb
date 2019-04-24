@@ -14,12 +14,16 @@ module MemoryProfiler
       24 => 'YB'
     }.freeze
 
+    TYPES   = ["allocated", "retained"].freeze
+    METRICS = ["memory", "objects"].freeze
+    NAMES   = ["gem", "file", "location", "class"].freeze
+
     def self.register_type(name, stat_attribute)
       @@lookups ||= []
       @@lookups << [name, stat_attribute]
 
-      ["allocated", "retained"].each do |type|
-        ["objects", "memory"].each do |metric|
+      TYPES.each do |type|
+        METRICS.each do |metric|
           attr_accessor "#{type}_#{metric}_by_#{name}"
         end
       end
@@ -123,9 +127,9 @@ module MemoryProfiler
 
       if options[:detailed_report] != false
         io.puts
-        ["allocated", "retained"].each do |type|
-          ["memory", "objects"].each do |metric|
-            ["gem", "file", "location", "class"].each do |name|
+        TYPES.each do |type|
+          METRICS.each do |metric|
+            NAMES.each do |name|
               scale_data = metric == "memory" && options[:scale_bytes]
               dump "#{type} #{metric} by #{name}", self.send("#{type}_#{metric}_by_#{name}"), io, scale_data
             end
