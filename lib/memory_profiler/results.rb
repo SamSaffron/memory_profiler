@@ -137,9 +137,7 @@ module MemoryProfiler
         end
       end
 
-      io.puts
       dump_strings(io, "Allocated", strings_allocated, limit: options[:allocated_strings])
-      io.puts
       dump_strings(io, "Retained", strings_retained, limit: options[:retained_strings])
 
       io.close if io.is_a? File
@@ -148,13 +146,14 @@ module MemoryProfiler
     private
 
     def dump_strings(io, title, strings, limit: nil)
-      return unless strings
+      return if !strings || strings.empty?
 
       if limit
         return if limit == 0
         strings = strings[0...limit]
       end
 
+      io.puts
       io.puts "#{title} String Report"
       io.puts @colorize.line("-----------------------------------")
       strings.each do |string, stats|
