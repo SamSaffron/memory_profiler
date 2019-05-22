@@ -5,7 +5,7 @@ module MemoryProfiler
 
     def initialize
       @gem_guess_cache = Hash.new
-      @location_cache = Hash.new { |h,k| h[k] = Hash.new.compare_by_identity }
+      @location_cache = Hash.new { |h, k| h[k] = Hash.new.compare_by_identity }
       @class_name_cache = Hash.new.compare_by_identity
       @string_cache = Hash.new
     end
@@ -37,7 +37,7 @@ module MemoryProfiler
       # This string is shortened to 200 characters which is what the string report shows
       # The string report can still list unique strings longer than 200 characters
       #   separately because the object_id of the shortened string will be different
-      @string_cache[obj] ||= String.new << obj[0,200]
+      @string_cache[obj] ||= String.new << obj[0, 200]
     end
   end
 end

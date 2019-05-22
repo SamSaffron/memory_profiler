@@ -29,7 +29,7 @@ module MemoryProfiler
     # @option opts :ignore_files a regular expression used to exclude certain files from tracing
     # @option opts :allow_files a string or array of strings to selectively include in tracing
     # @return [MemoryProfiler::Results]
-    def self.report(opts={}, &block)
+    def self.report(opts = {}, &block)
       self.new(opts).run(&block)
     end
 
@@ -115,7 +115,7 @@ module MemoryProfiler
           # we do memsize first to avoid freezing as a side effect and shifting
           # storage to the new frozen string, this happens on @hash[s] in lookup_string
           memsize = ObjectSpace.memsize_of(obj)
-          string     = klass == String ? helper.lookup_string(obj) : nil
+          string = klass == String ? helper.lookup_string(obj) : nil
 
           # compensate for API bug
           memsize = rvalue_size if memsize > 100_000_000_000

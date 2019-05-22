@@ -21,7 +21,6 @@ class NonStringNamedClass
   end
 end
 
-
 module MemoryProfiler
 
   class TestHelpers < Minitest::Test
@@ -31,7 +30,7 @@ module MemoryProfiler
     end
 
     def test_stdlib_parse
-      assert_gem_parse( "psych",
+      assert_gem_parse("psych",
                        "/home/sam/.rbenv/versions/2.5.0/lib/ruby/2.5.0/psych.rb")
 
       assert_gem_parse("rss",
@@ -39,24 +38,23 @@ module MemoryProfiler
 
     end
 
-
     def test_rubygems_parse
-      assert_gem_parse( "rubygems",
+      assert_gem_parse("rubygems",
                         "/home/sam/.rbenv/versions/ruby-head/lib/ruby/2.1.0/rubygems/version.rb")
     end
 
     def test_standard_parse
-      assert_gem_parse( "rails_multisite",
+      assert_gem_parse("rails_multisite",
                         "/home/sam/Source/discourse/vendor/gems/rails_multisite/lib")
     end
 
     def test_another_standard_parse
-      assert_gem_parse( "activesupport-3.2.12",
+      assert_gem_parse("activesupport-3.2.12",
                         "/home/sam/.rbenv/versions/ruby-head/lib/ruby/gems/2.1.0/gems/activesupport-3.2.12/lib/active_support/dependencies.rb")
     end
 
     def test_app_path_parse
-      assert_gem_parse( "discourse/app",
+      assert_gem_parse("discourse/app",
                         "/home/sam/Source/discourse/app/assets")
     end
 

@@ -11,9 +11,9 @@ module MemoryProfiler
       end
 
       stats_by_memsize = stat_totals.sort_by! { |metric, memsize, _count| [-memsize, metric] }.take(max).
-          map! { |metric, memsize, _count| { data: metric, count: memsize } }
+        map! { |metric, memsize, _count| { data: metric, count: memsize } }
       stats_by_count = stat_totals.sort_by! { |metric, _memsize, count| [-count, metric] }.take(max).
-          map! { |metric, _memsize, count| { data: metric, count: count } }
+        map! { |metric, _memsize, count| { data: metric, count: count } }
 
       [stats_by_memsize, stats_by_count]
 

@@ -15,7 +15,7 @@ class TestReporterPrivateStartStop < TestReporter
   # failing when testing the functionality of the public API, but not here,
   # then there is something wrong when handling the `current_report` variable
   # that needs to be addressed.
-  def create_report(options={}, &profiled_block)
+  def create_report(options = {}, &profiled_block)
     profiled_block ||= -> { default_block }
     reporter = MemoryProfiler::Reporter.new(options)
     reporter.start

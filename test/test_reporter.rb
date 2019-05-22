@@ -25,7 +25,7 @@ class TestReporter < Minitest::Test
   end
 
   # Shared method that creates a Results with 1 retained object using options provided
-  def create_report(options={}, &profiled_block)
+  def create_report(options = {}, &profiled_block)
     profiled_block ||= -> { default_block }
     MemoryProfiler::Reporter.report(options, &profiled_block)
   end
@@ -83,37 +83,37 @@ class TestReporter < Minitest::Test
   end
 
   def test_class_tracing_with_array
-    results = create_report(:trace => [Foo])
+    results = create_report(trace: [Foo])
     assert_equal(1, results.total_allocated)
     assert_equal(0, results.total_retained)
   end
 
   def test_class_tracing_with_value
-    results = create_report(:trace => Foo)
+    results = create_report(trace: Foo)
     assert_equal(1, results.total_allocated)
     assert_equal(0, results.total_retained)
   end
 
   def test_ignore_file_with_regex
-    results = create_report(:ignore_files => /test_reporter\.rb/)
+    results = create_report(ignore_files: /test_reporter\.rb/)
     assert_equal(3, results.total_allocated)
     assert_equal(0, results.total_retained)
   end
 
   def test_ignore_file_with_string
-    results = create_report(:ignore_files => 'test_reporter.rb|another_file.rb')
+    results = create_report(ignore_files: 'test_reporter.rb|another_file.rb')
     assert_equal(3, results.total_allocated)
     assert_equal(0, results.total_retained)
   end
 
   def test_allow_files_with_string
-    results = create_report(:allow_files => 'test_reporter')
+    results = create_report(allow_files: 'test_reporter')
     assert_equal(13, results.total_allocated)
     assert_equal(1, results.total_retained)
   end
 
   def test_allow_files_with_array
-    results = create_report(:allow_files => ['test_reporter', 'another_file'])
+    results = create_report(allow_files: ['test_reporter', 'another_file'])
     assert_equal(13, results.total_allocated)
     assert_equal(1, results.total_retained)
   end

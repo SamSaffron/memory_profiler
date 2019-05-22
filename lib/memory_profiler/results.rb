@@ -53,7 +53,6 @@ module MemoryProfiler
         self.send("retained_objects_by_#{name}=", count_results)
       end
 
-
       self.strings_allocated = string_report(allocated, top)
       self.strings_retained = string_report(retained, top)
 
@@ -90,8 +89,8 @@ module MemoryProfiler
         # Return array of [string, [[location, count], [location, count], ...]
         map! { |list| [list[0].string_value,
                        list.group_by { |stat| stat.location }.
-                            map { |location, stat_list| [location, stat_list.size] }.
-                            sort_by!(&:last).reverse!
+                         map { |location, stat_list| [location, stat_list.size] }.
+                         sort_by!(&:last).reverse!
                       ]
         }
     end
@@ -184,5 +183,3 @@ module MemoryProfiler
   end
 
 end
-
-

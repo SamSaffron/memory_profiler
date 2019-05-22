@@ -14,7 +14,7 @@ class TestReporterPublicStartStop < TestReporter
   # When something fails here, and not in the private api tests, then there is
   # something wrong specifically in the methods handling the `current_reporter`
   # that needs to be fixed.
-  def create_report(options={}, &profiled_block)
+  def create_report(options = {}, &profiled_block)
     profiled_block ||= -> { default_block }
     MemoryProfiler.start(options)
     profiled_block.call rescue nil
