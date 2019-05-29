@@ -53,4 +53,33 @@ class TestResults < Minitest::Test
     assert_match(/^Total allocated: #{"%.2f" % total_size} kB/, io.string, 'The total allocated memsize is scaled.')
     assert_match(/^ +#{"%.2f" % array_size} kB  Array$/, io.string, 'The allocated memsize for Array is scaled.')
   end
+
+  def normalized_paths_report
+    MemoryProfiler.report do
+      require 'json'
+      JSON.generate(lorem: 'ipsum', foo: 'bar', alpha: 'delta')
+    end
+  end
+
+  def test_normalize_paths_default
+    report = normalized_paths_report
+    io = StringIO.new
+    report.pretty_print(io)
+    assert_match(%r!(/gems/.*?)*/gems/json-2.2.0/lib/json/common.rb!, io.string)
+  end
+
+  def test_normalize_paths_false
+    report = normalized_paths_report
+    io = StringIO.new
+    report.pretty_print(io, normalize_paths: false)
+    assert_match(%r!(/gems/.*?)*/gems/json-2.2.0/lib/json/common.rb!, io.string)
+  end
+
+  def test_normalize_paths_true
+    report = normalized_paths_report
+    io = StringIO.new
+    report.pretty_print(io, normalize_paths: true)
+    refute_match(%r!(/gems/.*?)*/gems/json-2.2.0/lib/json/common.rb!, io.string)
+    assert_match(%r!json-2.2.0/lib/json/common.rb!, io.string)
+  end
 end

@@ -103,6 +103,7 @@ module MemoryProfiler
     # @option opts [Integer] :allocated_strings how many allocated strings to print
     # @option opts [Boolean] :detailed_report should report include detailed information
     # @option opts [Boolean] :scale_bytes calculates unit prefixes for the numbers of bytes
+    # @option opts [Boolean] :normalize_paths strips default gem dir-path from location data
     def pretty_print(io = $stdout, **options)
       # Handle the special case that Ruby PrettyPrint expects `pretty_print`
       # to be a customized pretty printing function for a class
@@ -112,6 +113,8 @@ module MemoryProfiler
 
       color_output = options.fetch(:color_output) { io.respond_to?(:isatty) && io.isatty }
       @colorize = color_output ? Polychrome.new : Monochrome.new
+
+      strip_gemdir = options[:normalize_paths]
 
       if options[:scale_bytes]
         total_allocated_output = scale_bytes(total_allocated_memsize)
@@ -130,23 +133,36 @@ module MemoryProfiler
           METRICS.each do |metric|
             NAMES.each do |name|
               scale_data = metric == "memory" && options[:scale_bytes]
-              dump "#{type} #{metric} by #{name}", self.send("#{type}_#{metric}_by_#{name}"), io, scale_data
+              dump "#{type} #{metric} by #{name}", self.send("#{type}_#{metric}_by_#{name}"), io, scale_data, strip_gemdir
             end
           end
         end
       end
 
       io.puts
-      dump_strings(io, "Allocated", strings_allocated, limit: options[:allocated_strings])
+      dump_strings(io, "Allocated", strings_allocated, strip_gemdir, limit: options[:allocated_strings])
       io.puts
-      dump_strings(io, "Retained", strings_retained, limit: options[:retained_strings])
+      dump_strings(io, "Retained", strings_retained, strip_gemdir, limit: options[:retained_strings])
 
       io.close if io.is_a? File
     end
 
+    #
+
+    GEM_DIR_PATH = File.join(Gem.default_dir, 'gems', '').freeze
+    private_constant :GEM_DIR_PATH
+
+    # Utility method to remove gem_dir from given (absolute) path
+    #
+    # e.g.: Providing +/Users/john-doe/.rvm/gems/ruby-2.4.5/gems/json-2.2.0/lib/json/common.rb+
+    #       will yield +json-2.2.0/lib/json/common.rb+
+    def strip_gemdir(path)
+      path.sub(GEM_DIR_PATH, '')
+    end
+
     private
 
-    def dump_strings(io, title, strings, limit: nil)
+    def dump_strings(io, title, strings, strip_gemdir, limit: nil)
       return unless strings
 
       if limit
@@ -159,20 +175,22 @@ module MemoryProfiler
       strings.each do |string, stats|
         io.puts "#{stats.reduce(0) { |a, b| a + b[1] }.to_s.rjust(10)}  #{@colorize.string((string.inspect))}"
         stats.sort_by { |x, y| [-y, x] }.each do |location, count|
-          io.puts "#{@colorize.path(count.to_s.rjust(10))}  #{location}"
+          normalized_location = strip_gemdir ? strip_gemdir(location) : location
+          io.puts "#{@colorize.path(count.to_s.rjust(10))}  #{normalized_location}"
         end
         io.puts
       end
       nil
     end
 
-    def dump(description, data, io, scale_data)
+    def dump(description, data, io, scale_data, strip_gemdir)
       io.puts description
       io.puts @colorize.line("-----------------------------------")
       if data && !data.empty?
         data.each do |item|
           data_string = scale_data ? scale_bytes(item[:count]) : item[:count].to_s
-          io.puts "#{data_string.rjust(10)}  #{item[:data]}"
+          data_value = strip_gemdir ? strip_gemdir(item[:data]) : item[:data]
+          io.puts "#{data_string.rjust(10)}  #{data_value}"
         end
       else
         io.puts "NO DATA"
