@@ -73,26 +73,29 @@ module MemoryProfiler
     end
 
     def string_report(data, top)
-      grouped_strings = data.values.
-        keep_if { |stat| stat.string_value }.
-        group_by { |stat| stat.string_value.object_id }.
-        values
+      grouped_strings = data.values
+        .keep_if  { |stat| stat.string_value }
+        .group_by { |stat| stat.string_value.object_id }
+        .values
 
       if grouped_strings.size > top
         cutoff = grouped_strings.sort_by!(&:size)[-top].size
         grouped_strings.keep_if { |list| list.size >= cutoff }
       end
 
-      grouped_strings.
-        sort! { |a, b| a.size == b.size ? a[0].string_value <=> b[0].string_value : b.size <=> a.size }.
-        first(top).
-        # Return array of [string, [[location, count], [location, count], ...]
-        map! { |list| [list[0].string_value,
-                       list.group_by { |stat| stat.location }.
-                         map { |location, stat_list| [location, stat_list.size] }.
-                         sort_by!(&:last).reverse!
-                      ]
-        }
+      grouped_strings
+        .sort! { |a, b| a.size == b.size ? a[0].string_value <=> b[0].string_value : b.size <=> a.size }
+        .first(top)
+        .map! do |list|
+          # Return array of [string, [[location, count], [location, count], ...]
+          [
+            list[0].string_value,
+            list.group_by { |stat| stat.location }
+              .map { |location, stat_list| [location, stat_list.size] }
+              .sort_by!(&:last)
+              .reverse!
+          ]
+        end
     end
 
     # Output the results of the report
