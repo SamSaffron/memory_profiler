@@ -106,6 +106,7 @@ module MemoryProfiler
     # @option opts [Integer] :allocated_strings how many allocated strings to print
     # @option opts [Boolean] :detailed_report should report include detailed information
     # @option opts [Boolean] :scale_bytes calculates unit prefixes for the numbers of bytes
+    # @option opts [Boolean] :normalize_paths print location paths relative to gem's source directory.
     def pretty_print(io = $stdout, **options)
       # Handle the special case that Ruby PrettyPrint expects `pretty_print`
       # to be a customized pretty printing function for a class
@@ -124,6 +125,8 @@ module MemoryProfiler
         total_retained_output = "#{total_retained_memsize} bytes"
       end
 
+      normalize_paths = options.fetch(:normalize_paths, false)
+
       io.puts "Total allocated: #{total_allocated_output} (#{total_allocated} objects)"
       io.puts "Total retained:  #{total_retained_output} (#{total_retained} objects)"
 
@@ -133,23 +136,38 @@ module MemoryProfiler
           METRICS.each do |metric|
             NAMES.each do |name|
               scale_data = metric == "memory" && options[:scale_bytes]
-              dump "#{type} #{metric} by #{name}", self.send("#{type}_#{metric}_by_#{name}"), io, scale_data
+              dump "#{type} #{metric} by #{name}", self.send("#{type}_#{metric}_by_#{name}"), io, scale_data, normalize_paths
             end
           end
         end
       end
 
       io.puts
-      dump_strings(io, "Allocated", strings_allocated, limit: options[:allocated_strings])
+      dump_strings(io, "Allocated", strings_allocated, normalize_paths, limit: options[:allocated_strings])
       io.puts
-      dump_strings(io, "Retained", strings_retained, limit: options[:retained_strings])
+      dump_strings(io, "Retained", strings_retained, normalize_paths, limit: options[:retained_strings])
 
       io.close if io.is_a? File
     end
 
+    def normalize_path(path)
+      @normalize_path ||= {}
+      @normalize_path[path] ||= begin
+        if %r!(/gems/.*)*/gems/(?<gemname>[^/]+)(?<rest>.*)! =~ path
+          "#{gemname}#{rest}"
+        elsif %r!ruby/2\.[^/]+/(?<stdlib>[^/.]+)(?<rest>.*)! =~ path
+          "ruby/lib/#{stdlib}#{rest}"
+        elsif %r!(?<app>[^/]+/(bin|app|lib))(?<rest>.*)! =~ path
+          "#{app}#{rest}"
+        else
+          path
+        end
+      end
+    end
+
     private
 
-    def dump_strings(io, title, strings, limit: nil)
+    def dump_strings(io, title, strings, normalize_paths, limit: nil)
       return unless strings
 
       if limit
@@ -162,6 +180,7 @@ module MemoryProfiler
       strings.each do |string, stats|
         io.puts "#{stats.reduce(0) { |a, b| a + b[1] }.to_s.rjust(10)}  #{@colorize.string((string.inspect))}"
         stats.sort_by { |x, y| [-y, x] }.each do |location, count|
+          location = normalize_path(location) if normalize_paths
           io.puts "#{@colorize.path(count.to_s.rjust(10))}  #{location}"
         end
         io.puts
@@ -169,13 +188,14 @@ module MemoryProfiler
       nil
     end
 
-    def dump(description, data, io, scale_data)
+    def dump(description, data, io, scale_data, normalize_paths)
       io.puts description
       io.puts @colorize.line("-----------------------------------")
       if data && !data.empty?
         data.each do |item|
-          data_string = scale_data ? scale_bytes(item[:count]) : item[:count].to_s
-          io.puts "#{data_string.rjust(10)}  #{item[:data]}"
+          count = scale_data ? scale_bytes(item[:count]) : item[:count].to_s
+          value = normalize_paths ? normalize_path(item[:data]) : item[:data]
+          io.puts "#{count.rjust(10)}  #{value}"
         end
       else
         io.puts "NO DATA"
