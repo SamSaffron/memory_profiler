@@ -96,6 +96,9 @@ The `pretty_print` method can take a few options:
 * `allocated_strings`: how many allocated strings to print - can be given a String
 * `detailed_report`: should report include detailed information - can be given a Boolean
 * `scale_bytes`: flag to convert byte units (e.g. 183200000 is reported as 183.2 MB, rounds with a precision of 2 decimal digits) - can be given a Boolean
+* `normalize_paths`: flag to remove a gem's directory path from printed locations - can be given a Boolean
+*Note: normalized path of a "location" from Ruby's stdlib will be prefixed with `ruby/lib/`. e.g.: `ruby/lib/set.rb`, `ruby/lib/pathname.rb`, etc.*
+
 
 Check out `Results#pretty_print` for more details.
 
