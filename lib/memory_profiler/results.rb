@@ -119,35 +119,39 @@ module MemoryProfiler
 
       if options[:scale_bytes]
         total_allocated_output = scale_bytes(total_allocated_memsize)
-        total_retained_output = scale_bytes(total_retained_memsize)
+        total_retained_output  = scale_bytes(total_retained_memsize)
       else
         total_allocated_output = "#{total_allocated_memsize} bytes"
-        total_retained_output = "#{total_retained_memsize} bytes"
+        total_retained_output  = "#{total_retained_memsize} bytes"
       end
-
-      normalize_paths = options.fetch(:normalize_paths, false)
 
       io.puts "Total allocated: #{total_allocated_output} (#{total_allocated} objects)"
       io.puts "Total retained:  #{total_retained_output} (#{total_retained} objects)"
 
-      if options[:detailed_report] != false
-        io.puts
+      unless options[:detailed_report] == false
         TYPES.each do |type|
           METRICS.each do |metric|
             NAMES.each do |name|
-              scale_data = metric == "memory" && options[:scale_bytes]
-              dump "#{type} #{metric} by #{name}", self.send("#{type}_#{metric}_by_#{name}"), io, scale_data, normalize_paths
+              dump_data(io, type, metric, name, options)
             end
           end
         end
       end
 
       io.puts
-      dump_strings(io, "Allocated", strings_allocated, normalize_paths, limit: options[:allocated_strings])
-      io.puts
-      dump_strings(io, "Retained", strings_retained, normalize_paths, limit: options[:retained_strings])
+      print_string_reports(io, options)
 
       io.close if io.is_a? File
+    end
+
+    def print_string_reports(io, options)
+      TYPES.each do |type|
+        dump_opts = {
+          normalize_paths: options[:normalize_paths],
+          limit: options["#{type}_strings".to_sym]
+        }
+        dump_strings(io, type, dump_opts)
+      end
     end
 
     def normalize_path(path)
@@ -167,40 +171,60 @@ module MemoryProfiler
 
     private
 
-    def dump_strings(io, title, strings, normalize_paths, limit: nil)
-      return unless strings
-
-      if limit
-        return if limit == 0
-        strings = strings[0...limit]
-      end
-
-      io.puts "#{title} String Report"
+    def print_title(io, title)
+      io.puts
+      io.puts title
       io.puts @colorize.line("-----------------------------------")
-      strings.each do |string, stats|
-        io.puts "#{stats.reduce(0) { |a, b| a + b[1] }.to_s.rjust(10)}  #{@colorize.string((string.inspect))}"
-        stats.sort_by { |x, y| [-y, x] }.each do |location, count|
-          location = normalize_path(location) if normalize_paths
-          io.puts "#{@colorize.path(count.to_s.rjust(10))}  #{location}"
-        end
-        io.puts
-      end
-      nil
     end
 
-    def dump(description, data, io, scale_data, normalize_paths)
-      io.puts description
-      io.puts @colorize.line("-----------------------------------")
+    def print_output(io, topic, detail)
+      io.puts "#{@colorize.path(topic.to_s.rjust(10))}  #{detail}"
+    end
+
+    def dump_data(io, type, metric, name, options)
+      print_title  io, "#{type} #{metric} by #{name}"
+      data = self.send "#{type}_#{metric}_by_#{name}"
+
+      scale_data = metric == "memory" && options[:scale_bytes]
+      normalize_paths = options[:normalize_paths]
+
       if data && !data.empty?
         data.each do |item|
-          count = scale_data ? scale_bytes(item[:count]) : item[:count].to_s
+          count = scale_data ? scale_bytes(item[:count]) : item[:count]
           value = normalize_paths ? normalize_path(item[:data]) : item[:data]
-          io.puts "#{count.rjust(10)}  #{value}"
+          print_output io, count, value
         end
       else
         io.puts "NO DATA"
       end
-      io.puts
+
+      nil
+    end
+
+    def dump_strings(io, type, options)
+      strings = self.send("strings_#{type}") || []
+      return if strings.empty?
+
+      options = {} unless options.is_a?(Hash)
+
+      if (limit = options[:limit])
+        return if limit == 0
+        strings = strings[0...limit]
+      end
+
+      normalize_paths = options[:normalize_paths]
+
+      print_title(io, "#{type.capitalize} String Report")
+      strings.each do |string, stats|
+        print_output io, (stats.reduce(0) { |a, b| a + b[1] }), @colorize.string(string.inspect)
+        stats.sort_by { |x, y| [-y, x] }.each do |location, count|
+          location = normalize_path(location) if normalize_paths
+          print_output io, count, location
+        end
+        io.puts
+      end
+
+      nil
     end
 
   end
