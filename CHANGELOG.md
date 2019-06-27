@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.9.14 - 28-06-2019
+
+- Pass 'normalize_path: true' to pretty_print to have locations stripped
+- Improve number formatting
+
 ## 0.9.13 - 22-03-2019
 
 - remove support explicitly for all EOL rubies, 2.1 and 2.2
