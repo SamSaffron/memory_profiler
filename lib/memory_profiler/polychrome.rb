@@ -5,7 +5,7 @@ module MemoryProfiler
   class Polychrome
 
     def path(text)
-      gray(text)
+      blue(text)
     end
 
     def string(text)
@@ -13,7 +13,7 @@ module MemoryProfiler
     end
 
     def line(text)
-      gray(text)
+      cyan(text)
     end
 
     private
