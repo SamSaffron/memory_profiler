@@ -29,8 +29,35 @@ module MemoryProfiler
       @location_cache[file][line] ||= "#{file}:#{line}"
     end
 
-    def lookup_class_name(klass)
-      @class_name_cache[klass] ||= ((klass.is_a?(Class) && klass.name) || '<<Unknown>>').to_s
+    KERNEL_CLASS_METHOD = Kernel.instance_method(:class)
+    if UnboundMethod.method_defined?(:bind_call)
+      def object_class(obj)
+        klass = obj.class rescue nil
+        unless Class === klass
+          # attempt to determine the true Class when .class returns something other than a Class
+          klass = KERNEL_CLASS_METHOD.bind_call(obj)
+        end
+        klass
+      end
+    else
+      def object_class(obj)
+        klass = obj.class rescue nil
+        unless Class === klass
+          # attempt to determine the true Class when .class returns something other than a Class
+          klass = KERNEL_CLASS_METHOD.bind(obj).call
+        end
+        klass
+      end
+    end
+
+    if Object.name.frozen? # Since Ruby 2.7 Module#name no longer allocate a new string
+      def lookup_class_name(klass)
+        ((klass.is_a?(Class) && klass.name) || '<<Unknown>>').to_s
+      end
+    else
+      def lookup_class_name(klass)
+        @class_name_cache[klass] ||= ((klass.is_a?(Class) && klass.name) || '<<Unknown>>').to_s
+      end
     end
 
     def lookup_string(obj)
