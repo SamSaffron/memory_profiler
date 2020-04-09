@@ -99,11 +99,7 @@ module MemoryProfiler
         next if @ignore_files && @ignore_files =~ file
         next if @allow_files && !(@allow_files =~ file)
 
-        klass = obj.class rescue nil
-        unless Class === klass
-          # attempt to determine the true Class when .class returns something other than a Class
-          klass = Kernel.instance_method(:class).bind(obj).call
-        end
+        klass = helper.object_class(obj)
         next if @trace && !trace.include?(klass)
 
         begin
