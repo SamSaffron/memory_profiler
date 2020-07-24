@@ -6,24 +6,29 @@ module MemoryProfiler
     # Returns results for both memory (memsize summed) and objects allocated (count) as a tuple.
     def top_n(max, metric_method)
 
-      stat_totals =
-        self.values
-          .group_by(&metric_method)
-          .map do |metric, stats|
-            [metric, stats.reduce(0) { |sum, stat| sum + stat.memsize }, stats.size]
-          end
+      metric_memsize = Hash.new(0)
+      metric_objects_count = Hash.new(0)
+
+      each_value do |value|
+        metric = value.send(metric_method)
+
+        metric_memsize[metric] += value.memsize
+        metric_objects_count[metric] += 1
+      end
 
       stats_by_memsize =
-        stat_totals
-          .sort_by! { |metric, memsize, _count| [-memsize, metric] }
+        metric_memsize
+          .to_a
+          .sort_by! { |metric, memsize| [-memsize, metric] }
           .take(max)
-          .map! { |metric, memsize, _count| { data: metric, count: memsize } }
+          .map! { |metric, memsize| { data: metric, count: memsize } }
 
       stats_by_count =
-        stat_totals
-          .sort_by! { |metric, _memsize, count| [-count, metric] }
+        metric_objects_count
+          .to_a
+          .sort_by! { |metric, count| [-count, metric] }
           .take(max)
-          .map! { |metric, _memsize, count| { data: metric, count: count } }
+          .map! { |metric, count| { data: metric, count: count } }
 
       [stats_by_memsize, stats_by_count]
     end

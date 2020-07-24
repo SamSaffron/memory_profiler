@@ -57,9 +57,9 @@ module MemoryProfiler
       self.strings_retained = string_report(retained, top)
 
       self.total_allocated = allocated.size
-      self.total_allocated_memsize = allocated.values.map!(&:memsize).inject(0, :+)
+      self.total_allocated_memsize = total_memsize(allocated)
       self.total_retained = retained.size
-      self.total_retained_memsize = retained.values.map!(&:memsize).inject(0, :+)
+      self.total_retained_memsize = total_memsize(retained)
 
       self
     end
@@ -73,19 +73,22 @@ module MemoryProfiler
     end
 
     def string_report(data, top)
-      grouped_strings = data.values
-        .keep_if  { |stat| stat.string_value }
-        .group_by { |stat| stat.string_value.object_id }
-        .values
+      grouped_strings = Hash.new { |hash, key| hash[key] = [] }
+      data.each_value do |stat|
+        if stat.string_value
+          grouped_strings[stat.string_value.object_id] << stat
+        end
+      end
+
+      grouped_strings = grouped_strings.values
 
       if grouped_strings.size > top
-        cutoff = grouped_strings.sort_by!(&:size)[-top].size
-        grouped_strings.keep_if { |list| list.size >= cutoff }
+        grouped_strings.sort_by!(&:size)
+        grouped_strings = grouped_strings.drop(grouped_strings.size - top)
       end
 
       grouped_strings
         .sort! { |a, b| a.size == b.size ? a[0].string_value <=> b[0].string_value : b.size <=> a.size }
-        .first(top)
         .map! do |list|
           # Return array of [string, [[location, count], [location, count], ...]
           [
@@ -170,6 +173,14 @@ module MemoryProfiler
     end
 
     private
+
+    def total_memsize(stat_hash)
+      sum = 0
+      stat_hash.each_value do |stat|
+        sum += stat.memsize
+      end
+      sum
+    end
 
     def print_title(io, title)
       io.puts
