@@ -25,6 +25,25 @@ Or install it yourself as:
 
 ## Usage
 
+There are two ways to use `memory_profiler`:
+* command line
+* convenience API
+
+### Command Line
+
+The easiest way to use memory_profiler is via the command line, which requires no modifications to your program. The basic usage is:
+```
+$ ruby-memory-profiler [options] <script.rb> [--] [script-options]
+```
+Where `script.rb` is the program you want to profile.
+
+For a full list of options, execute the following command:
+```
+ruby-memory-profiler -h
+```
+
+### Convenience API
+
 ```ruby
 require 'memory_profiler'
 report = MemoryProfiler.report do

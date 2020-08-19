@@ -1,5 +1,9 @@
 # Changelog
 
+## master
+
+- Support Command Line Interface
+
 ## 0.9.14 - 28-06-2019
 
 - Pass 'normalize_path: true' to pretty_print to have locations stripped
