@@ -15,6 +15,7 @@ Gem::Specification.new do |spec|
   spec.homepage      = "https://github.com/SamSaffron/memory_profiler"
   spec.license       = "MIT"
 
+  spec.executables   = ["ruby-memory-profiler"]
   spec.files         = Dir["README.md", "CHANGELOG.md", "LICENSE.txt", "lib/**/*"]
 
   spec.required_ruby_version = ">= 2.3.0"

@@ -9,6 +9,7 @@ require "memory_profiler/stat"
 require "memory_profiler/stat_hash"
 require "memory_profiler/results"
 require "memory_profiler/reporter"
+require "memory_profiler/cli"
 
 module MemoryProfiler
   def self.report(opts = {}, &block)
