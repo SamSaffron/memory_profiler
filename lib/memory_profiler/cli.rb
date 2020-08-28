@@ -106,12 +106,12 @@ module MemoryProfiler
     end
 
     def reporter_options(options)
-      options.slice(:top, :trace, :ignore_files, :allow_files)
+      options.select { |k, _v| [:top, :trace, :ignore_files, :allow_files].include?(k) }
     end
 
     def results_options(options)
-      options.slice(:to_file, :color_output, :retained_strings, :allocated_strings,
-                    :detailed_report, :scale_bytes, :normalize_paths)
+      options.select { |k, _v| [:to_file, :color_output, :retained_strings, :allocated_strings,
+                    :detailed_report, :scale_bytes, :normalize_paths].include?(k) }
     end
 
     def defaults
