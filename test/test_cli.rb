@@ -60,13 +60,13 @@ class TestCLI < Minitest::Test
 
   def test_detailed_report
     assert_output(/allocated objects by location\n--------/) do
-      @cli.run(["--detailed-report", @script_file])
+      @cli.run(["--detailed", @script_file])
     end
   end
 
   def test_no_detailed_report
     out, _err = capture_io do
-      @cli.run(["--no-detailed-report", @script_file])
+      @cli.run(["--no-detailed", @script_file])
     end
     refute_includes out, "allocated objects by location\n--------"
   end
@@ -80,6 +80,16 @@ class TestCLI < Minitest::Test
       @cli.run(["--normalize-paths", @script_file])
     end
 
+    assert_match(%r!\d+\s{2}longhorn-0.1.0/lib/longhorn.rb:\d+!, out)
+    assert_match(%r!ruby/lib/set.rb!, out)
+  end
+
+  def test_pretty
+    out, _err = capture_io do
+      @cli.run(["--pretty", @script_file])
+    end
+
+    assert_match(/\d kB/, out)
     assert_match(%r!\d+\s{2}longhorn-0.1.0/lib/longhorn.rb:\d+!, out)
     assert_match(%r!ruby/lib/set.rb!, out)
   end
