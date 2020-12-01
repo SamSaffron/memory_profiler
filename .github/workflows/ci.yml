@@ -30,4 +30,4 @@ jobs:
           bundle config path vendor/bundle
           bundle install --jobs 4
       - name: Tests
-        run: bundle exec rake tests
+        run: bundle exec rake test
