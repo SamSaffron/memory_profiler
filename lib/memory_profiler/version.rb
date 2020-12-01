@@ -1,5 +1,5 @@
 # frozen_string_literal: true
 
 module MemoryProfiler
-  VERSION = "0.9.14"
+  VERSION = "1.0.0"
 end

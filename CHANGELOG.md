@@ -1,8 +1,11 @@
 # Changelog
 
-## master
+## 1.0.0 - 02-12-2020
 
-- Support Command Line Interface
+- Added new CLI `ruby-memory-profiler` which can be used to profile scripts @fatkodima
+- Reduced memory usage when generating reports
+- Some optimizations for Ruby 2.7
+- Remove EOL Rubies: 2.3 and 2.4 are no longer supported (use an earlier version of the gem if needed)
 
 ## 0.9.14 - 28-06-2019
 
