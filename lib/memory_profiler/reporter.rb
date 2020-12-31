@@ -34,7 +34,7 @@ module MemoryProfiler
     end
 
     def start
-      3.times { GC.start }
+      4.times { GC.start }
       GC.disable
 
       @generation = GC.count
@@ -47,7 +47,7 @@ module MemoryProfiler
       retained = StatHash.new.compare_by_identity
 
       GC.enable
-      3.times { GC.start }
+      4.times { GC.start }
 
       # Caution: Do not allocate any new Objects between the call to GC.start and the completion of the retained
       #          lookups. It is likely that a new Object would reuse an object_id from a GC'd object.
