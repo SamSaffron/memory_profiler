@@ -34,8 +34,8 @@ module MemoryProfiler
     end
 
     def start
-      3.times { GC.start(immediate_sweep: true) }
-      GC.start(immediate_sweep: true)
+      3.times { GC.start }
+      GC.start
       GC.disable
 
       @generation = GC.count
@@ -50,10 +50,10 @@ module MemoryProfiler
       GC.enable
       # for whatever reason doing GC in a block is more effective at
       # freeing objects.
-      # full_mark: true, immediate_mark: true are already default
-      3.times { GC.start(immediate_sweep: true) }
+      # full_mark: true, immediate_mark: true, immediate_sweep: true are already default
+      3.times { GC.start }
       # another start outside of the block to release the block
-      GC.start(immediate_sweep: true)
+      GC.start
 
       # Caution: Do not allocate any new Objects between the call to GC.start and the completion of the retained
       #          lookups. It is likely that a new Object would reuse an object_id from a GC'd object.
