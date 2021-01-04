@@ -34,7 +34,8 @@ module MemoryProfiler
     end
 
     def start
-      4.times { GC.start }
+      3.times { GC.start(immediate_sweep: true) }
+      GC.start(immediate_sweep: true)
       GC.disable
 
       @generation = GC.count
@@ -47,7 +48,12 @@ module MemoryProfiler
       retained = StatHash.new.compare_by_identity
 
       GC.enable
-      4.times { GC.start }
+      # for whatever reason doing GC in a block is more effective at
+      # freeing objects.
+      # full_mark: true, immediate_mark: true are already default
+      3.times { GC.start(immediate_sweep: true) }
+      # another start outside of the block to release the block
+      GC.start(immediate_sweep: true)
 
       # Caution: Do not allocate any new Objects between the call to GC.start and the completion of the retained
       #          lookups. It is likely that a new Object would reuse an object_id from a GC'd object.
