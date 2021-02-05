@@ -94,9 +94,10 @@ module MemoryProfiler
           [
             list[0].string_value,
             list.group_by { |stat| stat.location }
-              .map { |location, stat_list| [location, stat_list.size] }
-              .sort_by!(&:last)
-              .reverse!
+            .map { |location, stat_list| [location, stat_list.select(&:shared).size, stat_list.size ] }
+            #.map { |location, stat_list| [location, stat_list.size] }
+            .sort_by!(&:last)
+            .reverse!
           ]
         end
     end
@@ -189,7 +190,7 @@ module MemoryProfiler
     end
 
     def print_output(io, topic, detail)
-      io.puts "#{@colorize.path(topic.to_s.rjust(10))}  #{detail}"
+      io.puts "#{@colorize.path(Array(topic).join("/").rjust(10))}  #{detail}"
     end
 
     def dump_data(io, type, metric, name, options)
@@ -225,12 +226,13 @@ module MemoryProfiler
 
       normalize_paths = options[:normalize_paths]
 
-      print_title(io, "#{type.capitalize} String Report")
+      print_title(io, "#{type.capitalize} String Report (Total/Shared)")
       strings.each do |string, stats|
-        print_output io, (stats.reduce(0) { |a, b| a + b[1] }), @colorize.string(string.inspect)
-        stats.sort_by { |x, y| [-y, x] }.each do |location, count|
+        total_counts = stats.map { |_, *cs| cs }.transpose.map { |cs| cs.reduce(0, :+) }
+        print_output io, total_counts.reverse, @colorize.string(string.inspect)
+        stats.sort_by { |x, y, z| [-z, x] }.each do |location, *counts|
           location = normalize_path(location) if normalize_paths
-          print_output io, count, location
+          print_output io, counts.reverse, location
         end
         io.puts
       end
