@@ -113,11 +113,17 @@ module MemoryProfiler
           # we do memsize first to avoid freezing as a side effect and shifting
           # storage to the new frozen string, this happens on @hash[s] in lookup_string
           memsize = ObjectSpace.memsize_of(obj)
-          string = klass == String ? helper.lookup_string(obj) : nil
+          string = if klass == String
+            shared = ObjectSpace.dump(obj)["shared"]
+            helper.lookup_string(obj)
+          else
+            shared = false
+            nil
+          end
 
           # compensate for API bug
           memsize = rvalue_size if memsize > 100_000_000_000
-          result[obj.__id__] = MemoryProfiler::Stat.new(class_name, gem, file, location, memsize, string)
+          result[obj.__id__] = MemoryProfiler::Stat.new(class_name, gem, file, location, memsize, string, shared)
         rescue
           # give up if any any error occurs inspecting the object
         end

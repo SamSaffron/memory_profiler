@@ -5,7 +5,9 @@ module MemoryProfiler
 
     attr_reader :class_name, :gem, :file, :location, :memsize, :string_value
 
-    def initialize(class_name, gem, file, location, memsize, string_value)
+    attr_reader :shared
+
+    def initialize(class_name, gem, file, location, memsize, string_value, shared)
       @class_name = class_name
       @gem = gem
 
@@ -14,6 +16,8 @@ module MemoryProfiler
 
       @memsize = memsize
       @string_value = string_value
+
+      @shared = shared
     end
 
   end
