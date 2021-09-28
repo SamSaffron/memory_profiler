@@ -78,7 +78,7 @@ class TestReporter < Minitest::Test
   def test_counts
     results = create_report
     assert_equal(16, results.total_allocated)
-    assert_equal(1, results.total_retained)
+    assert_includes(1..4, results.total_retained)
     assert_equal(1, results.retained_objects_by_location.length)
   end
 
@@ -245,7 +245,7 @@ class TestReporter < Minitest::Test
     end
 
     assert_equal(3, results.total_allocated)
-    assert_equal(0, results.total_retained)
+    assert_includes(0..1, results.total_retained)
     assert_equal(1, results.strings_allocated.size)
     assert_equal('String', results.allocated_objects_by_class[0][:data])
     assert_equal(2, results.allocated_objects_by_class[0][:count])
