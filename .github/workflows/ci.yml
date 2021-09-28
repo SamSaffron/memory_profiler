@@ -11,6 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Ruby ${{ matrix.ruby }}
     strategy:
+      fail-fast: false
       matrix:
         ruby: ["2.7", "2.6"]
     steps:
