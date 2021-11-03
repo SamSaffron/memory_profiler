@@ -15,7 +15,7 @@ class TestResults < Minitest::Test
 
   def test_no_conflict_with_pretty_print
     require 'pp'
-    assert_output(/#<MemoryProfiler::Results:\w*>/) { pp(MemoryProfiler::Results.new) }
+    assert_output(/#<MemoryProfiler::Results:.*/) { pp(MemoryProfiler::Results.new) }
   end
 
   def scale_bytes_result
