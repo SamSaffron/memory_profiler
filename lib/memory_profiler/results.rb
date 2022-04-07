@@ -24,7 +24,16 @@ module MemoryProfiler
 
       TYPES.each do |type|
         METRICS.each do |metric|
-          attr_accessor "#{type}_#{metric}_by_#{name}"
+          class_eval <<~RUBY, __FILE__, __LINE__ + 1
+            def #{type}_#{metric}_by_#{name}                                                  # def allocated_memory_by_file
+              @#{type}_#{metric}_by ||= {}                                                    #   @allocated_memory_by ||= {}
+                                                                                              #
+              @#{type}_#{metric}_by['#{name}'] ||= begin                                      #   @allocated_memory_by['file'] ||= begin
+                _, stat_attribute = @@lookups.find { |(n, _stat_attribute)| n == '#{name}' }  #     _, stat_attribute = @@lookups.find { |(n, _stat_attribute)| n == 'file' }
+                @#{type}.top_n_#{metric}(@top, stat_attribute)                                #     @allocated.top_n_memory(@top, stat_attribute)
+              end                                                                             #   end
+            end                                                                               # end
+          RUBY
         end
       end
     end
@@ -34,27 +43,20 @@ module MemoryProfiler
     register_type 'location', :location
     register_type 'class', :class_name
 
-    attr_accessor :strings_retained, :strings_allocated
+    attr_writer :strings_retained, :strings_allocated
     attr_accessor :total_retained, :total_allocated
     attr_accessor :total_retained_memsize, :total_allocated_memsize
 
+    def initialize
+      @allocated = StatHash.new
+      @retained = StatHash.new
+      @top = 50
+    end
+
     def register_results(allocated, retained, top)
-
-      @@lookups.each do |name, stat_attribute|
-
-        memsize_results, count_results = allocated.top_n(top, stat_attribute)
-
-        self.send("allocated_memory_by_#{name}=", memsize_results)
-        self.send("allocated_objects_by_#{name}=", count_results)
-
-        memsize_results, count_results = retained.top_n(top, stat_attribute)
-
-        self.send("retained_memory_by_#{name}=", memsize_results)
-        self.send("retained_objects_by_#{name}=", count_results)
-      end
-
-      self.strings_allocated = string_report(allocated, top)
-      self.strings_retained = string_report(retained, top)
+      @allocated = allocated
+      @retained = retained
+      @top = top
 
       self.total_allocated = allocated.size
       self.total_allocated_memsize = total_memsize(allocated)
@@ -62,6 +64,14 @@ module MemoryProfiler
       self.total_retained_memsize = total_memsize(retained)
 
       self
+    end
+
+    def strings_allocated
+      @strings_allocated ||= string_report(@allocated, @top)
+    end
+
+    def strings_retained
+      @strings_retained ||= string_report(@retained, @top)
     end
 
     def scale_bytes(bytes)
@@ -139,10 +149,10 @@ module MemoryProfiler
             end
           end
         end
-      end
 
-      io.puts
-      print_string_reports(io, options)
+        io.puts
+        print_string_reports(io, options)
+      end
 
       io.close if io.is_a? File
     end
