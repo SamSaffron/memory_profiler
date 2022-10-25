@@ -235,13 +235,19 @@ class TestReporter < Minitest::Test
     if RUBY_VERSION < '3'
       # 3 times "0", 2 times for interpolated strings
       total_allocated = 5 * (3 + 2 + 2 + 2)
-    else
+      unique = 20
+    elsif RUBY_VERSION < '3.1'
       # 3 times "0", 2 times for short interpolated strings, 3 times for long interpolated strings
       total_allocated = 5 * (3 + 2 + 3 + 3)
+      unique = 20
+    else
+      # 2 times for short interpolated strings, 3 times for long interpolated strings
+      total_allocated = 5 * (2 + 3 + 3)
+      unique = 15
     end
 
     assert_equal(total_allocated, results.total_allocated, "#{total_allocated} strings should be allocated")
-    assert_equal(20, results.strings_allocated.size, "20 unique strings should be observed")
+    assert_equal(unique, results.strings_allocated.size, "#{unique} unique strings should be observed")
     assert_equal(0, results.strings_retained.size, "0 unique strings should be retained")
   end
 
