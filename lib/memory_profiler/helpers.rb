@@ -16,7 +16,7 @@ module MemoryProfiler
           gemname
         elsif /\/rubygems[\.\/]/ =~ path
           "rubygems"
-        elsif /ruby\/2\.[^\/]+\/(?<stdlib>[^\/\.]+)/ =~ path
+        elsif /ruby\/\d\.[^\/]+\/(?<stdlib>[^\/\.]+)/ =~ path
           stdlib
         elsif /(?<app>[^\/]+\/(bin|app|lib))/ =~ path
           app
