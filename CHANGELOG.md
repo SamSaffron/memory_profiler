@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.1 - 23-10-2022
+
+- Adapts tests to Ruby 3.0 / 3.1
+- Lazy report evaluation
+- Tested under Truffle Ruby
+
 ## 1.0.0 - 02-12-2020
 
 - Added new CLI `ruby-memory-profiler` which can be used to profile scripts @fatkodima
