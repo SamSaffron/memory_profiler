@@ -172,7 +172,7 @@ module MemoryProfiler
       @normalize_path[path] ||= begin
         if %r!(/gems/.*)*/gems/(?<gemname>[^/]+)(?<rest>.*)! =~ path
           "#{gemname}#{rest}"
-        elsif %r!ruby/2\.[^/]+/(?<stdlib>[^/.]+)(?<rest>.*)! =~ path
+        elsif %r!ruby/\d\.[^/]+/(?<stdlib>[^/.]+)(?<rest>.*)! =~ path
           "ruby/lib/#{stdlib}#{rest}"
         elsif %r!(?<app>[^/]+/(bin|app|lib))(?<rest>.*)! =~ path
           "#{app}#{rest}"

@@ -88,8 +88,6 @@ module MemoryProfiler
     # Iterates through objects in memory of a given generation.
     # Stores results along with meta data of objects collected.
     def object_list(generation)
-
-      rvalue_size = GC::INTERNAL_CONSTANTS[:RVALUE_SIZE]
       helper = Helpers.new
 
       result = StatHash.new.compare_by_identity
@@ -116,7 +114,7 @@ module MemoryProfiler
           string = klass == String ? helper.lookup_string(obj) : nil
 
           # compensate for API bug
-          memsize = rvalue_size if memsize > 100_000_000_000
+          memsize = GC::INTERNAL_CONSTANTS[:RVALUE_SIZE] if memsize > 100_000_000_000
           result[obj.__id__] = MemoryProfiler::Stat.new(class_name, gem, file, location, memsize, string)
         rescue
           # give up if any any error occurs inspecting the object

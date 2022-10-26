@@ -232,8 +232,22 @@ class TestReporter < Minitest::Test
       end
     end
 
-    assert_equal(45, results.total_allocated, "45 strings should be allocated")
-    assert_equal(20, results.strings_allocated.size, "20 unique strings should be observed")
+    if RUBY_VERSION < '3'
+      # 3 times "0", 2 times for interpolated strings
+      total_allocated = 5 * (3 + 2 + 2 + 2)
+      unique = 20
+    elsif RUBY_VERSION < '3.1'
+      # 3 times "0", 2 times for short interpolated strings, 3 times for long interpolated strings
+      total_allocated = 5 * (3 + 2 + 3 + 3)
+      unique = 20
+    else
+      # 2 times for short interpolated strings, 3 times for long interpolated strings
+      total_allocated = 5 * (2 + 3 + 3)
+      unique = 15
+    end
+
+    assert_equal(total_allocated, results.total_allocated, "#{total_allocated} strings should be allocated")
+    assert_equal(unique, results.strings_allocated.size, "#{unique} unique strings should be observed")
     assert_equal(0, results.strings_retained.size, "0 unique strings should be retained")
   end
 
@@ -244,11 +258,14 @@ class TestReporter < Minitest::Test
       string.to_sym
     end
 
-    assert_equal(3, results.total_allocated)
-    assert_equal(0, results.total_retained)
+    strings_allocated = RUBY_VERSION < '3' ? 2 : 1
+    assert_equal(strings_allocated + 1, results.total_allocated)
+    assert_includes(0..1, results.total_retained)
     assert_equal(1, results.strings_allocated.size)
+
     assert_equal('String', results.allocated_objects_by_class[0][:data])
-    assert_equal(2, results.allocated_objects_by_class[0][:count])
+    assert_equal(strings_allocated, results.allocated_objects_by_class[0][:count])
+
     assert_equal('Symbol', results.allocated_objects_by_class[1][:data])
     assert_equal(1, results.allocated_objects_by_class[1][:count])
   end
