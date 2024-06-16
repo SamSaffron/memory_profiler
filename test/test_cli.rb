@@ -111,4 +111,9 @@ class TestCLI < Minitest::Test
       assert_equal 1, result
     end
   end
+
+  def test_profiles_commands
+    out = `bin/ruby-memory-profiler --pretty run -- ruby -e '[]'`
+    assert_includes(out, "Total allocated:")
+  end
 end

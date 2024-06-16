@@ -32,14 +32,23 @@ There are two ways to use `memory_profiler`:
 ### Command Line
 
 The easiest way to use memory_profiler is via the command line, which requires no modifications to your program. The basic usage is:
+
 ```
-$ ruby-memory-profiler [options] <script.rb> [--] [script-options]
+$ ruby-memory-profiler [options] run [--] command [command-options]
 ```
-Where `script.rb` is the program you want to profile.
+
+Example:
+
+```
+$ ruby-memory-profiler --pretty run -- rubocop --cache false
+
+$ ruby-memory-profiler --max=10 --pretty run -- ruby notify_users.rb 1 2 3 --quiet
+```
 
 For a full list of options, execute the following command:
+
 ```
-ruby-memory-profiler -h
+$ ruby-memory-profiler -h
 ```
 
 ### Convenience API

@@ -12,7 +12,7 @@ class TestReporter < Minitest::Test
   def default_block
     # Create an object from a gem outside memory_profiler which allocates
     # its own objects internally
-    MiniTest::Reporter.new
+    Minitest::Reporter.new
 
     # Create 10 strings
     10.times { |i| i.to_s }
