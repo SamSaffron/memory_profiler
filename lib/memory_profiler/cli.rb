@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require "optparse"
-require "base64"
 
 module MemoryProfiler
   class CLI
@@ -141,7 +140,7 @@ module MemoryProfiler
     end
 
     def serialize_hash(hash)
-      Base64.urlsafe_encode64(Marshal.dump(hash))
+      [Marshal.dump(hash)].pack("m0")
     end
   end
 end
