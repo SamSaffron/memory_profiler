@@ -1,5 +1,7 @@
 # Changelog
 
+- Add ability to profile commands via CLI @fatkodima
+
 ## 1.0.1 - 23-10-2022
 
 - Adapts tests to Ruby 3.0 / 3.1

@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "optparse"
+require "base64"
 
 module MemoryProfiler
   class CLI
@@ -13,20 +14,6 @@ module MemoryProfiler
     DEFAULTS = {
       ignore_files: "memory_profiler/lib"
     }.freeze
-
-    REPORTER_KEYS = [
-      :top, :trace, :ignore_files, :allow_files
-    ].freeze
-
-    RESULTS_KEYS = [
-      :to_file, :color_output, :retained_strings, :allocated_strings,
-      :detailed_report, :scale_bytes, :normalize_paths
-    ].freeze
-
-    private_constant :BIN_NAME, :VERSION_INFO,:STATUS_SUCCESS, :STATUS_ERROR,
-                     :DEFAULTS, :REPORTER_KEYS, :RESULTS_KEYS
-
-    #
 
     def run(argv)
       options = {}
@@ -43,17 +30,24 @@ module MemoryProfiler
         return STATUS_ERROR
       end
 
-      MemoryProfiler.start(reporter_options(options))
-      load script
-
-      STATUS_SUCCESS
+      if script == "run"
+        # We are profiling a command.
+        profile_command(options, argv)
+      else
+        # We are profiling a ruby file.
+        begin
+          MemoryProfiler.start(options)
+          load(script)
+        ensure
+          report = MemoryProfiler.stop
+          report.pretty_print(**options)
+        end
+        STATUS_SUCCESS
+      end
     rescue OptionParser::InvalidOption, OptionParser::InvalidArgument, OptionParser::MissingArgument => e
       puts parser
       puts e.message
       STATUS_ERROR
-    ensure
-      report = MemoryProfiler.stop
-      report&.pretty_print(**results_options(options))
     end
 
     private
@@ -66,7 +60,7 @@ module MemoryProfiler
               A Memory Profiler for Ruby
 
           Usage:
-              #{BIN_NAME} [options] <script.rb> [--] [script-options]
+              #{BIN_NAME} [options] run [--] command [command-options]
         BANNER
 
         opts.separator ""
@@ -138,12 +132,16 @@ module MemoryProfiler
       end
     end
 
-    def reporter_options(options)
-      options.select { |k, _v| REPORTER_KEYS.include?(k) }
+    def profile_command(options, argv)
+      env = {}
+      env["MEMORY_PROFILER_OPTIONS"] = serialize_hash(options) if options.any?
+      gem_path = File.expand_path('../', __dir__)
+      env["RUBYOPT"] = "-I #{gem_path} -r memory_profiler/autorun #{ENV['RUBYOPT']}"
+      exec(env, *argv)
     end
 
-    def results_options(options)
-      options.select { |k, _v| RESULTS_KEYS.include?(k) }
+    def serialize_hash(hash)
+      Base64.urlsafe_encode64(Marshal.dump(hash))
     end
   end
 end
