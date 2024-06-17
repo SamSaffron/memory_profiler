@@ -12,7 +12,7 @@ class TestReporter < Minitest::Test
   def default_block
     # Create an object from a gem outside memory_profiler which allocates
     # its own objects internally
-    MiniTest::Reporter.new
+    Minitest::Reporter.new
 
     # Create 10 strings
     10.times { |i| i.to_s }
@@ -77,7 +77,7 @@ class TestReporter < Minitest::Test
 
   def test_counts
     results = create_report
-    assert_equal(16, results.total_allocated)
+    assert_equal(15, results.total_allocated)
     assert_equal(1, results.total_retained)
     assert_equal(1, results.retained_objects_by_location.length)
   end
@@ -96,13 +96,13 @@ class TestReporter < Minitest::Test
 
   def test_ignore_file_with_regex
     results = create_report(ignore_files: /test_reporter\.rb/)
-    assert_equal(3, results.total_allocated)
+    assert_equal(2, results.total_allocated)
     assert_equal(0, results.total_retained)
   end
 
   def test_ignore_file_with_string
     results = create_report(ignore_files: 'test_reporter.rb|another_file.rb')
-    assert_equal(3, results.total_allocated)
+    assert_equal(2, results.total_allocated)
     assert_equal(0, results.total_retained)
   end
 

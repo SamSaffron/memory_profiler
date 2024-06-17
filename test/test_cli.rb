@@ -81,7 +81,7 @@ class TestCLI < Minitest::Test
     end
 
     assert_match(%r!\d+\s{2}longhorn-0.1.0/lib/longhorn.rb:\d+!, out)
-    assert_match(%r!ruby/lib/set.rb!, out)
+    assert_match(%r!ruby/lib/\S*set.rb!, out)
   end
 
   def test_pretty
@@ -91,7 +91,7 @@ class TestCLI < Minitest::Test
 
     assert_match(/\d kB/, out)
     assert_match(%r!\d+\s{2}longhorn-0.1.0/lib/longhorn.rb:\d+!, out)
-    assert_match(%r!ruby/lib/set.rb!, out)
+    assert_match(%r!ruby/lib/\S*set.rb!, out)
   end
 
   def test_prints_help_when_script_not_specified
