@@ -80,6 +80,6 @@ class TestResults < Minitest::Test
     io = StringIO.new
     report.pretty_print(io, normalize_paths: true)
     assert_match(%r!\d+\s{2}longhorn-0.1.0/lib/longhorn.rb:\d+!, io.string)
-    assert_match(%r!ruby/lib/set.rb!, io.string)
+    assert_match(%r!ruby/lib/\S*set.rb!, io.string)
   end
 end

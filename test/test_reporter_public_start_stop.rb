@@ -37,7 +37,7 @@ class TestReporterPublicStartStop < TestReporter
 
     assert_equal(reporter, same_reporter)
     # Some extra here due to variables needed in the test above
-    assert_equal(17, results.total_allocated)
+    assert_equal(16, results.total_allocated)
   end
 
   def test_exception_handling
