@@ -1,5 +1,7 @@
 # Changelog
 
+## 1.0.2 - 17-06-2024
+
 - Add ability to profile commands via CLI @fatkodima
 
 ## 1.0.1 - 23-10-2022
