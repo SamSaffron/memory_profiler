@@ -240,9 +240,13 @@ class TestReporter < Minitest::Test
       # 3 times "0", 2 times for short interpolated strings, 3 times for long interpolated strings
       total_allocated = 5 * (3 + 2 + 3 + 3)
       unique = 20
-    else
+    elsif RUBY_VERSION < '3.3'
       # 2 times for short interpolated strings, 3 times for long interpolated strings
       total_allocated = 5 * (2 + 3 + 3)
+      unique = 15
+    else
+      # 2 times for short interpolated strings, 2 times for long interpolated strings
+      total_allocated = 5 * (2 + 2 + 2)
       unique = 15
     end
 
