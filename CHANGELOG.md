@@ -1,5 +1,7 @@
 # Changelog
 
+- Remove EOL Rubies: < 3.1 are no longer supported (use an earlier version of the gem if needed)
+
 ## 1.0.2 - 17-06-2024
 
 - Add ability to profile commands via CLI @fatkodima
