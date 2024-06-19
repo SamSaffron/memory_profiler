@@ -232,15 +232,7 @@ class TestReporter < Minitest::Test
       end
     end
 
-    if RUBY_VERSION < '3'
-      # 3 times "0", 2 times for interpolated strings
-      total_allocated = 5 * (3 + 2 + 2 + 2)
-      unique = 20
-    elsif RUBY_VERSION < '3.1'
-      # 3 times "0", 2 times for short interpolated strings, 3 times for long interpolated strings
-      total_allocated = 5 * (3 + 2 + 3 + 3)
-      unique = 20
-    elsif RUBY_VERSION < '3.3'
+    if RUBY_VERSION < '3.3'
       # 2 times for short interpolated strings, 3 times for long interpolated strings
       total_allocated = 5 * (2 + 3 + 3)
       unique = 15
@@ -262,7 +254,7 @@ class TestReporter < Minitest::Test
       string.to_sym
     end
 
-    strings_allocated = RUBY_VERSION < '3' ? 2 : 1
+    strings_allocated = 1
     assert_equal(strings_allocated + 1, results.total_allocated)
     assert_includes(0..1, results.total_retained)
     assert_equal(1, results.strings_allocated.size)
