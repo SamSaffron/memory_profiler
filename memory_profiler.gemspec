@@ -19,4 +19,6 @@ Gem::Specification.new do |spec|
   spec.files         = Dir["README.md", "CHANGELOG.md", "LICENSE.txt", "lib/**/*", "bin/ruby-memory-profiler"]
 
   spec.required_ruby_version = ">= 3.1.0"
+
+  spec.metadata["changelog_uri"] = spec.homepage + "/blob/master/CHANGELOG.md"
 end
