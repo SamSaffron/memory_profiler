@@ -1,4 +1,4 @@
-[![CI](https://github.com/SamSaffron/memory_profiler/workflows/CI/badge.svg)](https://github.com/SamSaffron/memory_profiler/actions?query=workflow%3ACI)
+[![CI](https://github.com/SamSaffron/memory_profiler/actions/workflows/ci.yml/badge.svg)](https://github.com/SamSaffron/memory_profiler/actions/workflows/ci.yml)
 [![Gem Version](https://badge.fury.io/rb/memory_profiler.svg)](https://rubygems.org/gems/memory_profiler)
 
 # MemoryProfiler
