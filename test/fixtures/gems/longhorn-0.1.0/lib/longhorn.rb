@@ -1,15 +1,15 @@
 # frozen_string_literal: true
 
-require 'set'
+require 'erb'
 
 module Longhorn
   def self.run
-    result = Set.new
+    result = []
     ["allocated", "retained"]
       .product(["memory", "objects"])
       .product(["gem", "file", "location", "class"])
       .each do |(type, metric), name|
-        result << "#{type} #{metric} by #{name}"
+        result << ERB.new("<%= type %> <%= metric %> by <%= name %>").result(binding)
       end
     result
   end

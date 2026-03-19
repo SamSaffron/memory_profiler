@@ -21,21 +21,21 @@ class TestCLI < Minitest::Test
     out, _err = capture_io do
       @cli.run([@script_file])
     end
-    assert_includes out, "set.rb"
+    assert_includes out, STDLIB_FILE
 
     out, _err = capture_io do
-      @cli.run(["--ignore-files=set.rb", @script_file])
+      @cli.run(["--ignore-files=#{STDLIB_FILE}", @script_file])
     end
-    refute_includes out, "set.rb"
+    refute_includes out, STDLIB_FILE
   end
 
   def test_allow_specific_files
-    assert_output(/set\.rb/) { @cli.run([@script_file]) }
+    assert_output(/#{Regexp.escape(STDLIB_FILE)}/) { @cli.run([@script_file]) }
 
     out, _err = capture_io do
       @cli.run(["--allow-files=longhorn", @script_file])
     end
-    refute_includes out, "set.rb"
+    refute_includes out, STDLIB_FILE
   end
 
   def test_redirects_output_to_specific_file
@@ -81,7 +81,7 @@ class TestCLI < Minitest::Test
     end
 
     assert_match(%r!\d+\s{2}longhorn-0.1.0/lib/longhorn.rb:\d+!, out)
-    assert_match(%r!ruby/lib/\S*set.rb!, out)
+    assert_match(%r!ruby/lib/\S*#{Regexp.escape(STDLIB_FILE)}!, out)
   end
 
   def test_pretty
@@ -91,7 +91,7 @@ class TestCLI < Minitest::Test
 
     assert_match(/\d kB/, out)
     assert_match(%r!\d+\s{2}longhorn-0.1.0/lib/longhorn.rb:\d+!, out)
-    assert_match(%r!ruby/lib/\S*set.rb!, out)
+    assert_match(%r!ruby/lib/\S*#{Regexp.escape(STDLIB_FILE)}!, out)
   end
 
   def test_prints_help_when_script_not_specified
